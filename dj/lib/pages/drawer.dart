@@ -1,0 +1,258 @@
+import 'package:flutter/material.dart';
+import 'categories.dart';
+import 'homepage.dart';
+import 'cart.dart';
+import 'my_orders.dart';
+import 'favorites.dart';
+import 'services.dart';
+import 'promotions.dart';
+import 'vedette.dart';
+import 'notifications.dart';
+import 'customer_service.dart';
+import 'settings.dart';
+
+const Color primaryBlue = Color(0xFF1E3A8A);
+
+class AppDrawer extends StatelessWidget {
+  const AppDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: Column(
+        children: [
+          _drawerHeader(),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _drawerItem(
+                  Icons.home,
+                  "Home",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HomePage()),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  Icons.grid_view,
+                  "Categories",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CategoriesPage(),
+                      ),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  Icons.shopping_cart,
+                  "Cart",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CartPage()),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  Icons.receipt_long,
+                  "My Orders",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MyOrdersPage(),
+                      ),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  Icons.favorite,
+                  "Favorites",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FavoritesPage(),
+                      ),
+                    );
+                  },
+                ),
+                Divider(),
+                _drawerItem(
+                  Icons.support_agent,
+                  "Services",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ServicesPage(),
+                      ),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  Icons.local_offer,
+                  "Promotions",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PromotionsPage(),
+                      ),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  Icons.star,
+                  "Vedette de la semaine",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const VedettePage(),
+                      ),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  Icons.notifications,
+                  "Notifications",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationsPage(),
+                      ),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  Icons.headset_mic,
+                  "Customer Service",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CustomerServicePage(),
+                      ),
+                    );
+                  },
+                ),
+                Divider(),
+                _drawerItem(
+                  Icons.settings,
+                  "Settings",
+                  context,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsPage(),
+                      ),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  Icons.logout,
+                  "Log Out",
+                  context,
+                  isLogout: true,
+                  onPressed: () {
+                    // Logique de déconnexion
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Widget _drawerHeader() {
+  return Container(
+    width: double.infinity,
+    padding: EdgeInsets.fromLTRB(16, 40, 16, 24),
+    decoration: BoxDecoration(color: primaryBlue),
+    child: Row(
+      children: [
+        CircleAvatar(
+          radius: 28,
+          backgroundColor: Colors.white,
+          child: Icon(Icons.person, color: primaryBlue, size: 32),
+        ),
+        SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Username",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              "mymail@gmail.com",
+              style: TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _drawerItem(
+  IconData icon,
+  String title,
+  BuildContext context, {
+  VoidCallback? onPressed,
+  bool isLogout = false,
+}) {
+  return ListTile(
+    leading: Icon(icon, color: isLogout ? Colors.red : primaryBlue),
+    title: Text(
+      title,
+      style: TextStyle(
+        color: isLogout ? Colors.red : Colors.black87,
+        fontWeight: isLogout ? FontWeight.w600 : FontWeight.normal,
+      ),
+    ),
+    onTap:
+        onPressed ??
+        () {
+          Navigator.pop(context);
+        },
+  );
+}
