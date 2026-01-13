@@ -10,6 +10,7 @@ import 'vedette.dart';
 import 'notifications.dart';
 import 'customer_service.dart';
 import 'settings.dart';
+import 'profile.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 
@@ -21,7 +22,7 @@ class AppDrawer extends StatelessWidget {
     return Drawer(
       child: Column(
         children: [
-          _drawerHeader(),
+          _drawerHeader(context),
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,
@@ -197,38 +198,47 @@ class AppDrawer extends StatelessWidget {
   }
 }
 
-Widget _drawerHeader() {
-  return Container(
-    width: double.infinity,
-    padding: EdgeInsets.fromLTRB(16, 40, 16, 24),
-    decoration: BoxDecoration(color: primaryBlue),
-    child: Row(
-      children: [
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: Colors.white,
-          child: Icon(Icons.person, color: primaryBlue, size: 32),
-        ),
-        SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Username",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+Widget _drawerHeader(BuildContext context) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfilePage()),
+      );
+    },
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 40, 16, 24),
+      decoration: const BoxDecoration(color: primaryBlue),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 28,
+            backgroundColor: Colors.white,
+            child: Icon(Icons.person, color: primaryBlue, size: 32),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Username",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              "mymail@gmail.com",
-              style: TextStyle(color: Colors.white70, fontSize: 13),
-            ),
-          ],
-        ),
-      ],
+              const SizedBox(height: 4),
+              Text(
+                "mymail@gmail.com",
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }

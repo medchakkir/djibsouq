@@ -1,57 +1,43 @@
 import 'package:flutter/material.dart';
 import 'pages/homepage.dart';
 
+const Color primaryBlue = Color(0xFF1E3A8A);
+
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  static _MyAppState? of(BuildContext context) {
-    return context.findAncestorStateOfType<_MyAppState>();
-  }
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  late ThemeMode _themeMode;
-
-  @override
-  void initState() {
-    super.initState();
-    // Déterminer le thème du système par défaut
-    final brightness = MediaQuery.of(context).platformBrightness;
-    _themeMode = brightness == Brightness.dark
-        ? ThemeMode.dark
-        : ThemeMode.light;
-  }
-
-  void setThemeMode(ThemeMode themeMode) {
-    setState(() {
-      _themeMode = themeMode;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DJIBSOUQ',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
         useMaterial3: true,
         brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
+        primaryColor: primaryBlue,
         primarySwatch: Colors.blue,
-        useMaterial3: true,
-        brightness: Brightness.dark,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: IconThemeData(color: primaryBlue),
+          titleTextStyle: TextStyle(
+            color: primaryBlue,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryBlue,
+            foregroundColor: Colors.white,
+          ),
+        ),
       ),
-      themeMode: _themeMode,
       home: const HomePage(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }

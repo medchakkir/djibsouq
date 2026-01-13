@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'detail_product.dart';
 
-final Color primaryBlue = Color(0xFF1E3A8A);
-final Color lightGrey = Color(0xFFF3F4F6);
-final Color cardGrey = Color(0xFFE5E7EB);
+const Color primaryBlue = Color(0xFF1E3A8A);
+const Color lightGrey = Color(0xFFF3F4F6);
+const Color cardGrey = Color(0xFFE5E7EB);
 
 // Modèle de produit
 class Product {
@@ -287,7 +287,7 @@ class ProductCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 140,
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -306,32 +306,35 @@ class ProductCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
-                  child: Text(product.image, style: TextStyle(fontSize: 48)),
+                  child: Text(
+                    product.image,
+                    style: const TextStyle(fontSize: 48),
+                  ),
                 ),
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               product.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Row(
               children: [
-                Icon(Icons.star, size: 12, color: Colors.amber),
-                SizedBox(width: 2),
+                const Icon(Icons.star, size: 12, color: Colors.amber),
+                const SizedBox(width: 2),
                 Text(
                   '${product.rating}',
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
                 ),
               ],
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               '\$${product.price.toStringAsFixed(2)}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: primaryBlue,
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
@@ -362,15 +365,15 @@ class ProductsHorizontalList extends StatelessWidget {
       children: [
         Text(
           title,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         SizedBox(
           height: 220,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: products.length,
-            separatorBuilder: (_, __) => SizedBox(width: 12),
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (_, index) {
               return ProductCard(
                 product: products[index],
