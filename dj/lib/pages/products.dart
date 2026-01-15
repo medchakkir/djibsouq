@@ -36,7 +36,8 @@ class ProductsData {
       category: 'Électronique',
       price: 999.99,
       rating: 4.8,
-      image: '📱',
+      image:
+          'https://via.placeholder.com/300x300/1E3A8A/FFFFFF?text=iPhone+15+Pro',
       reviews: 256,
     ),
     Product(
@@ -45,7 +46,8 @@ class ProductsData {
       category: 'Électronique',
       price: 149.99,
       rating: 4.6,
-      image: '🎧',
+      image:
+          'https://via.placeholder.com/300x300/1E3A8A/FFFFFF?text=Galaxy+Buds',
       reviews: 128,
     ),
     Product(
@@ -54,7 +56,8 @@ class ProductsData {
       category: 'Électronique',
       price: 1299.99,
       rating: 4.7,
-      image: '💻',
+      image:
+          'https://via.placeholder.com/300x300/1E3A8A/FFFFFF?text=Laptop+ASUS',
       reviews: 89,
     ),
     Product(
@@ -63,7 +66,7 @@ class ProductsData {
       category: 'Électronique',
       price: 599.99,
       rating: 4.9,
-      image: '📲',
+      image: 'https://via.placeholder.com/300x300/1E3A8A/FFFFFF?text=iPad+Air',
       reviews: 342,
     ),
 
@@ -74,7 +77,8 @@ class ProductsData {
       category: 'Vêtements',
       price: 49.99,
       rating: 4.5,
-      image: '👕',
+      image:
+          'https://via.placeholder.com/300x300/EC4899/FFFFFF?text=T-Shirt+Nike',
       reviews: 512,
     ),
     Product(
@@ -83,7 +87,8 @@ class ProductsData {
       category: 'Vêtements',
       price: 79.99,
       rating: 4.6,
-      image: '👖',
+      image:
+          'https://via.placeholder.com/300x300/EC4899/FFFFFF?text=Jeans+Levis',
       reviews: 321,
     ),
     Product(
@@ -92,7 +97,8 @@ class ProductsData {
       category: 'Vêtements',
       price: 129.99,
       rating: 4.4,
-      image: '🧥',
+      image:
+          'https://via.placeholder.com/300x300/EC4899/FFFFFF?text=Veste+Adidas',
       reviews: 198,
     ),
     Product(
@@ -101,7 +107,8 @@ class ProductsData {
       category: 'Vêtements',
       price: 99.99,
       rating: 4.7,
-      image: '👟',
+      image:
+          'https://via.placeholder.com/300x300/EC4899/FFFFFF?text=Chaussures+Puma',
       reviews: 267,
     ),
 
@@ -112,7 +119,7 @@ class ProductsData {
       category: 'Maison',
       price: 39.99,
       rating: 4.6,
-      image: '💡',
+      image: 'https://via.placeholder.com/300x300/10B981/FFFFFF?text=Lampe+LED',
       reviews: 145,
     ),
     Product(
@@ -121,7 +128,8 @@ class ProductsData {
       category: 'Maison',
       price: 599.99,
       rating: 4.8,
-      image: '🛋️',
+      image:
+          'https://via.placeholder.com/300x300/10B981/FFFFFF?text=Canape+Moderne',
       reviews: 87,
     ),
     Product(
@@ -130,7 +138,8 @@ class ProductsData {
       category: 'Maison',
       price: 199.99,
       rating: 4.5,
-      image: '🧵',
+      image:
+          'https://via.placeholder.com/300x300/10B981/FFFFFF?text=Tapis+Persan',
       reviews: 63,
     ),
     Product(
@@ -139,7 +148,8 @@ class ProductsData {
       category: 'Maison',
       price: 89.99,
       rating: 4.4,
-      image: '🖼️',
+      image:
+          'https://via.placeholder.com/300x300/10B981/FFFFFF?text=Tableau+Deco',
       reviews: 112,
     ),
 
@@ -150,7 +160,8 @@ class ProductsData {
       category: 'Sports',
       price: 59.99,
       rating: 4.7,
-      image: '⚽',
+      image:
+          'https://via.placeholder.com/300x300/F59E0B/FFFFFF?text=Ballon+Foot',
       reviews: 234,
     ),
     Product(
@@ -159,7 +170,8 @@ class ProductsData {
       category: 'Sports',
       price: 149.99,
       rating: 4.6,
-      image: '🎾',
+      image:
+          'https://via.placeholder.com/300x300/F59E0B/FFFFFF?text=Raquette+Tennis',
       reviews: 89,
     ),
     Product(
@@ -168,7 +180,7 @@ class ProductsData {
       category: 'Sports',
       price: 299.99,
       rating: 4.8,
-      image: '💪',
+      image: 'https://via.placeholder.com/300x300/F59E0B/FFFFFF?text=Halteres',
       reviews: 156,
     ),
     Product(
@@ -177,7 +189,8 @@ class ProductsData {
       category: 'Sports',
       price: 39.99,
       rating: 4.5,
-      image: '🧘',
+      image:
+          'https://via.placeholder.com/300x300/F59E0B/FFFFFF?text=Tapis+Yoga',
       reviews: 203,
     ),
 
@@ -188,7 +201,8 @@ class ProductsData {
       category: 'Livres',
       price: 29.99,
       rating: 4.9,
-      image: '📖',
+      image:
+          'https://via.placeholder.com/300x300/8B5CF6/FFFFFF?text=Seigneur+Anneaux',
       reviews: 523,
     ),
     Product(
@@ -197,7 +211,8 @@ class ProductsData {
       category: 'Livres',
       price: 24.99,
       rating: 4.8,
-      image: '📚',
+      image:
+          'https://via.placeholder.com/300x300/8B5CF6/FFFFFF?text=Harry+Potter',
       reviews: 612,
     ),
     Product(
@@ -206,7 +221,7 @@ class ProductsData {
       category: 'Livres',
       price: 32.99,
       rating: 4.7,
-      image: '📕',
+      image: 'https://via.placeholder.com/300x300/8B5CF6/FFFFFF?text=Sapiens',
       reviews: 378,
     ),
     Product(
@@ -215,7 +230,7 @@ class ProductsData {
       category: 'Livres',
       price: 28.99,
       rating: 4.6,
-      image: '📗',
+      image: 'https://via.placeholder.com/300x300/8B5CF6/FFFFFF?text=Dune',
       reviews: 267,
     ),
 
@@ -226,7 +241,8 @@ class ProductsData {
       category: 'Beauté',
       price: 34.99,
       rating: 4.6,
-      image: '✨',
+      image:
+          'https://via.placeholder.com/300x300/F43F5E/FFFFFF?text=Creme+Hydratante',
       reviews: 289,
     ),
     Product(
@@ -235,7 +251,8 @@ class ProductsData {
       category: 'Beauté',
       price: 19.99,
       rating: 4.5,
-      image: '🧴',
+      image:
+          'https://via.placeholder.com/300x300/F43F5E/FFFFFF?text=Shampoing+Bio',
       reviews: 167,
     ),
     Product(
@@ -244,7 +261,8 @@ class ProductsData {
       category: 'Beauté',
       price: 89.99,
       rating: 4.8,
-      image: '💐',
+      image:
+          'https://via.placeholder.com/300x300/F43F5E/FFFFFF?text=Parfum+Luxe',
       reviews: 234,
     ),
     Product(
@@ -253,7 +271,8 @@ class ProductsData {
       category: 'Beauté',
       price: 44.99,
       rating: 4.7,
-      image: '💄',
+      image:
+          'https://via.placeholder.com/300x300/F43F5E/FFFFFF?text=Maquillage',
       reviews: 345,
     ),
   ];
@@ -279,7 +298,7 @@ class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback? onTap;
 
-  ProductCard({required this.product, this.onTap, super.key});
+  const ProductCard({required this.product, this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -304,11 +323,28 @@ class ProductCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: cardGrey,
                   borderRadius: BorderRadius.circular(12),
+                  image: DecorationImage(
+                    image: NetworkImage(product.image),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                child: Center(
-                  child: Text(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
                     product.image,
-                    style: const TextStyle(fontSize: 48),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: cardGrey,
+                        child: const Center(
+                          child: Icon(
+                            Icons.image,
+                            color: Colors.grey,
+                            size: 32,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -352,7 +388,7 @@ class ProductsHorizontalList extends StatelessWidget {
   final List<Product> products;
   final String title;
 
-  ProductsHorizontalList({
+  const ProductsHorizontalList({
     required this.products,
     required this.title,
     super.key,

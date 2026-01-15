@@ -29,7 +29,7 @@ class AppDrawer extends StatelessWidget {
               children: [
                 _drawerItem(
                   Icons.home,
-                  "Home",
+                  "Accueil",
                   context,
                   onPressed: () {
                     Navigator.pop(context);
@@ -55,7 +55,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 _drawerItem(
                   Icons.shopping_cart,
-                  "Cart",
+                  "Panier",
                   context,
                   onPressed: () {
                     Navigator.pop(context);
@@ -67,7 +67,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 _drawerItem(
                   Icons.receipt_long,
-                  "My Orders",
+                  "Mes Commandes",
                   context,
                   onPressed: () {
                     Navigator.pop(context);
@@ -81,7 +81,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 _drawerItem(
                   Icons.favorite,
-                  "Favorites",
+                  "Favories",
                   context,
                   onPressed: () {
                     Navigator.pop(context);
@@ -152,7 +152,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 _drawerItem(
                   Icons.headset_mic,
-                  "Customer Service",
+                  "Service Client",
                   context,
                   onPressed: () {
                     Navigator.pop(context);
@@ -167,7 +167,7 @@ class AppDrawer extends StatelessWidget {
                 Divider(),
                 _drawerItem(
                   Icons.settings,
-                  "Settings",
+                  "Paramètres",
                   context,
                   onPressed: () {
                     Navigator.pop(context);
@@ -181,7 +181,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 _drawerItem(
                   Icons.logout,
-                  "Log Out",
+                  "Déconnexion",
                   context,
                   isLogout: true,
                   onPressed: () {
@@ -223,7 +223,7 @@ Widget _drawerHeader(BuildContext context) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Username",
+                "Nom d'Utilisateur",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -232,7 +232,7 @@ Widget _drawerHeader(BuildContext context) {
               ),
               const SizedBox(height: 4),
               Text(
-                "mymail@gmail.com",
+                "monmail@gmail.com",
                 style: TextStyle(color: Colors.white70, fontSize: 13),
               ),
             ],

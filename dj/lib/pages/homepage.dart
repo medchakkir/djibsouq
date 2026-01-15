@@ -1,3 +1,4 @@
+import 'package:dj/pages/categories_product_page.dart';
 import 'package:flutter/material.dart';
 import 'categories.dart';
 import 'products.dart';
@@ -108,7 +109,6 @@ class _HomePageState extends State<HomePage> {
 
     return Column(
       children: [
-        // DOTS
         ValueListenableBuilder<int>(
           valueListenable: _currentOnboarding,
           builder: (_, value, __) {
@@ -131,10 +131,7 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
-
         const SizedBox(height: 12),
-
-        // SLIDER
         SizedBox(
           height: 160,
           child: PageView.builder(
@@ -144,38 +141,71 @@ class _HomePageState extends State<HomePage> {
               _currentOnboarding.value = index;
             },
             itemBuilder: (_, index) {
+              final banners = [
+                {
+                  'title': 'Big Sale Today',
+                  'subtitle': 'Up to 50% discount\non selected items',
+                  'image':
+                      'https://via.placeholder.com/500x300/1E3A8A/FFFFFF?text=Big+Sale',
+                },
+                {
+                  'title': 'New Arrivals',
+                  'subtitle': 'Check out our latest\nproducts',
+                  'image':
+                      'https://via.placeholder.com/500x300/1E3A8A/FFFFFF?text=New+Arrivals',
+                },
+                {
+                  'title': 'Free Delivery',
+                  'subtitle': 'On orders over 50\nFree shipping',
+                  'image':
+                      'https://via.placeholder.com/500x300/1E3A8A/FFFFFF?text=Free+Delivery',
+                },
+              ];
+              final banner = banners[index];
               return Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      colors: [
-                        primaryBlue.withOpacity(0.9),
-                        primaryBlue.withOpacity(0.6),
-                      ],
+                    image: DecorationImage(
+                      image: NetworkImage(banner['image'] as String),
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text(
-                          "Big Sale Today",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        colors: [
+                          primaryBlue.withOpacity(0.7),
+                          primaryBlue.withOpacity(0.4),
+                        ],
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            banner['title'] as String,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          "Up to 50% discount\non selected items",
-                          style: TextStyle(color: Colors.white70, fontSize: 14),
-                        ),
-                      ],
+                          const SizedBox(height: 6),
+                          Text(
+                            banner['subtitle'] as String,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -200,7 +230,6 @@ class _HomePageState extends State<HomePage> {
           fontSize: 22,
         ),
       ),
-      centerTitle: false,
     );
   }
 
@@ -213,10 +242,30 @@ class _HomePageState extends State<HomePage> {
 
   Widget _categoriesPreview(BuildContext context) {
     final categories = [
-      {'name': 'Électronique', 'icon': Icons.devices},
-      {'name': 'Vêtements', 'icon': Icons.shopping_bag},
-      {'name': 'Maison', 'icon': Icons.home},
-      {'name': 'Sports', 'icon': Icons.sports_soccer},
+      {
+        'name': 'Électronique',
+        'icon': Icons.devices,
+        'image':
+            'https://via.placeholder.com/200x200/3B82F6/FFFFFF?text=Electronique',
+      },
+      {
+        'name': 'Vêtements',
+        'icon': Icons.shopping_bag,
+        'image':
+            'https://via.placeholder.com/200x200/EC4899/FFFFFF?text=Vetements',
+      },
+      {
+        'name': 'Maison',
+        'icon': Icons.home,
+        'image':
+            'https://via.placeholder.com/200x200/10B981/FFFFFF?text=Maison',
+      },
+      {
+        'name': 'Sports',
+        'icon': Icons.sports_soccer,
+        'image':
+            'https://via.placeholder.com/200x200/F59E0B/FFFFFF?text=Sports',
+      },
     ];
 
     return Column(
@@ -237,7 +286,9 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const CategoriesPage(),
+                    builder: (_) => CategoryProductsPage(
+                      categoryName: category['name'] as String,
+                    ),
                   ),
                 );
               },
@@ -252,21 +303,56 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    Icon(
-                      category['icon'] as IconData,
-                      color: primaryBlue,
-                      size: 28,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        category['image'] as String,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[200],
+                            child: Center(
+                              child: Icon(
+                                category['icon'] as IconData,
+                                color: primaryBlue,
+                                size: 24,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      category['name'] as String,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.5),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            category['name'] as String,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                        ],
                       ),
                     ),
                   ],
@@ -280,7 +366,7 @@ class _HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const CategoriesPage()),
+              MaterialPageRoute(builder: (_) => const CategoriesPage()),
             );
           },
           child: Text(
