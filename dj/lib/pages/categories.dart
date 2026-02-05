@@ -5,8 +5,8 @@ import 'categories/maison.dart';
 import 'categories/sports.dart';
 import 'categories/livres.dart';
 import 'categories/beaute.dart';
-import 'categories/services_loue.dart';
-import 'categories/services_maintenance.dart';
+import 'categories/louer/services_loue.dart';
+import 'categories/louer/services_maintenance.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
@@ -121,28 +121,28 @@ class CategoriesPage extends StatelessWidget {
     Widget page;
     switch (name) {
       case 'Électronique':
-        page = const ElectronicsPage();
+        page = ElectronicsPage(title: name);
         break;
       case 'Vêtements':
-        page = const VetementsPage();
+        page = VetementsPage(title: name);
         break;
       case 'Maison':
-        page = const MaisonPage();
+        page = MaisonPage(title: name);
         break;
       case 'Sports':
-        page = const SportsPage();
+        page = SportsPage(title: name);
         break;
       case 'Livres':
-        page = const LivresPage();
+        page = LivresPage(title: name);
         break;
       case 'Beauté':
-        page = const BeautePage();
+        page = BeautePage(title: name);
         break;
       case 'Services loué':
-        page = const ServicesLouePage();
+        page = ServicesLouePage();
         break;
       case 'Services maintenance':
-        page = const ServicesMaintenancePage();
+        page = ServicesMaintenancePage();
         break;
       default:
         ScaffoldMessenger.of(
@@ -181,15 +181,9 @@ class CategoriesPage extends StatelessWidget {
             // Image en arrière-plan
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: color.withOpacity(0.1),
-                    child: Icon(icon, size: 48, color: color),
-                  );
-                },
+              child: Container(
+                color: color.withOpacity(0.1),
+                child: Icon(icon, size: 48, color: color),
               ),
             ),
             // Overlay gradient

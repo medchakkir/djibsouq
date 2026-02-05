@@ -60,31 +60,25 @@ class _DetailProductPageState extends State<DetailProductPage> {
                   bottomLeft: Radius.circular(16),
                   bottomRight: Radius.circular(16),
                 ),
-                child: Image.network(
-                  widget.product.image,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[200],
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.image_not_supported,
-                              size: 80,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'Image indisponible',
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
-                          ],
+                child: Container(
+                  color: Colors.grey[200],
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.image_not_supported,
+                          size: 80,
+                          color: Colors.grey[400],
                         ),
-                      ),
-                    );
-                  },
+                        const SizedBox(height: 12),
+                        Text(
+                          'Image indisponible',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

@@ -323,28 +323,14 @@ class ProductCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: cardGrey,
                   borderRadius: BorderRadius.circular(12),
-                  image: DecorationImage(
-                    image: NetworkImage(product.image),
-                    fit: BoxFit.cover,
-                  ),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    product.image,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: cardGrey,
-                        child: const Center(
-                          child: Icon(
-                            Icons.image,
-                            color: Colors.grey,
-                            size: 32,
-                          ),
-                        ),
-                      );
-                    },
+                  child: Container(
+                    color: cardGrey,
+                    child: const Center(
+                      child: Icon(Icons.image, color: Colors.grey, size: 48),
+                    ),
                   ),
                 ),
               ),

@@ -1,64 +1,13 @@
 import 'package:flutter/material.dart';
-import '../detail_product.dart';
-import '../products.dart';
+import '../../detail_product.dart';
+import '../../products.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
 const Color cardGrey = Color(0xFFE5E7EB);
 
-class ServicesLouePage extends StatelessWidget {
-  const ServicesLouePage({super.key});
-
-  static const List<Map<String, dynamic>> services = [
-    {
-      'name': 'Canva Pro',
-      'price': '4.99 \$',
-      'duration': '1 mois',
-      'icon': Icons.design_services,
-      'features': [
-        'Accès premium',
-        'Sans watermark',
-        'Templates Pro',
-        'Support inclus',
-      ],
-    },
-    {
-      'name': 'Adobe Photoshop',
-      'price': '9.99 \$',
-      'duration': '1 mois',
-      'icon': Icons.brush,
-      'features': [
-        'Photoshop complet',
-        'Outils pro',
-        'Cloud inclus',
-        'Support inclus',
-      ],
-    },
-    {
-      'name': 'Netflix Premium',
-      'price': '6.99 \$',
-      'duration': '1 mois',
-      'icon': Icons.movie,
-      'features': [
-        'Ultra HD',
-        'Multi-écrans',
-        'Sans publicité',
-        'Support inclus',
-      ],
-    },
-    {
-      'name': 'Spotify Premium',
-      'price': '7.99 \$',
-      'duration': '3 mois',
-      'icon': Icons.music_note,
-      'features': [
-        'Sans publicité',
-        'Téléchargement',
-        'Qualité audio max',
-        'Support inclus',
-      ],
-    },
-  ];
+class ServicesMaintenancePage extends StatelessWidget {
+  const ServicesMaintenancePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -67,8 +16,8 @@ class ServicesLouePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'Services loués',
+        title: Text(
+          'Consultation à domicile',
           style: TextStyle(
             color: primaryBlue,
             fontWeight: FontWeight.bold,
@@ -83,9 +32,11 @@ class ServicesLouePage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildTrustHeader(),
+          _buildHeader(),
           const SizedBox(height: 16),
-          ...services.map((service) => _buildServiceCard(context, service)),
+          _buildConsultationCard(context),
+          const SizedBox(height: 24),
+          _buildTrustSection(),
           const SizedBox(height: 24),
           _buildHowItWorks(),
         ],
@@ -93,8 +44,8 @@ class ServicesLouePage extends StatelessWidget {
     );
   }
 
-  // 🔐 Bandeau confiance
-  Widget _buildTrustHeader() {
+  // 🏠 Bandeau en haut
+  Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -105,7 +56,7 @@ class ServicesLouePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Accès Premium Garanti',
+            'Consultation informatique à domicile',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -114,12 +65,16 @@ class ServicesLouePage extends StatelessWidget {
           ),
           SizedBox(height: 8),
           Text(
-            '⚡ Activation rapide (5–30 min)',
+            'Un expert se déplace chez vous pour diagnostiquer vos problèmes',
             style: TextStyle(color: Colors.white),
           ),
-          Text('🔒 Compte sécurisé', style: TextStyle(color: Colors.white)),
+          SizedBox(height: 4),
           Text(
-            '📞 Support client inclus',
+            '🔒 Sécurité et confidentialité garanties',
+            style: TextStyle(color: Colors.white),
+          ),
+          Text(
+            '⏱ Intervention rapide et flexible',
             style: TextStyle(color: Colors.white),
           ),
         ],
@@ -127,10 +82,9 @@ class ServicesLouePage extends StatelessWidget {
     );
   }
 
-  // 🧱 Carte service
-  Widget _buildServiceCard(BuildContext context, Map<String, dynamic> service) {
+  // 🧱 Carte consultation
+  Widget _buildConsultationCard(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -147,13 +101,13 @@ class ServicesLouePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              Icon(service['icon'], size: 40, color: primaryBlue),
-              const SizedBox(width: 12),
+            children: const [
+              Icon(Icons.home_repair_service, size: 40, color: primaryBlue),
+              SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  service['name'],
-                  style: const TextStyle(
+                  'Consultation à domicile',
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: primaryBlue,
@@ -161,29 +115,14 @@ class ServicesLouePage extends StatelessWidget {
                 ),
               ),
               Text(
-                service['price'],
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                '5,77 \$',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text('Durée : ${service['duration']}'),
-          const SizedBox(height: 8),
-          Column(
-            children: service['features']
-                .map<Widget>(
-                  (f) => Row(
-                    children: [
-                      const Icon(Icons.check, size: 16, color: Colors.green),
-                      const SizedBox(width: 6),
-                      Text(f),
-                    ],
-                  ),
-                )
-                .toList(),
+          const SizedBox(height: 12),
+          const Text(
+            'Diagnostic complet, conseils personnalisés et devis transparent si réparation nécessaire.',
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -196,17 +135,14 @@ class ServicesLouePage extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                final price = double.parse(
-                  service['price'].replaceAll(RegExp(r'[^\d.]'), ''),
-                );
                 final detailProduct = Product(
-                  id: service['name'],
-                  name: service['name'],
-                  category: 'Services Location',
-                  price: price,
-                  rating: 4.5,
-                  image: '🔑',
-                  reviews: 100,
+                  id: 'consultation',
+                  name: 'Consultation à domicile',
+                  category: 'Services Maintenance',
+                  price: 5.77,
+                  rating: 4.8,
+                  image: '🔧',
+                  reviews: 200,
                 );
                 Navigator.push(
                   context,
@@ -216,7 +152,7 @@ class ServicesLouePage extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text('LOUER MAINTENANT'),
+              child: const Text('RÉSERVER MAINTENANT'),
             ),
           ),
         ],
@@ -224,7 +160,29 @@ class ServicesLouePage extends StatelessWidget {
     );
   }
 
-  //  Comment ça marche
+  //  Section confiance
+  Widget _buildTrustSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: const [
+        Text(
+          'Pourquoi nous faire confiance ?',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: primaryBlue,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text('✔ Techniciens qualifiés et expérimentés'),
+        Text('✔ Intervention à domicile avec respect du matériel'),
+        Text('✔ Confidentialité et sécurité de vos données'),
+        Text('✔ Assistance rapide et fiable'),
+      ],
+    );
+  }
+
+  // 🔁 Comment ça marche
   Widget _buildHowItWorks() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,10 +196,10 @@ class ServicesLouePage extends StatelessWidget {
           ),
         ),
         SizedBox(height: 8),
-        Text('1️⃣ Choisissez votre service'),
-        Text('2️⃣ Effectuez le paiement'),
-        Text('3️⃣ Recevez vos accès rapidement'),
-        Text('4️⃣ Support disponible 24/7'),
+        Text('1️⃣ Réservez votre consultation à domicile'),
+        Text('2️⃣ Le technicien se déplace chez vous'),
+        Text('3️⃣ Diagnostic complet et explications claires'),
+        Text('4️⃣ Vous décidez librement des actions à suivre'),
       ],
     );
   }

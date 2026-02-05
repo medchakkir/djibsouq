@@ -51,10 +51,9 @@ class ProductCard extends StatelessWidget {
                       top: Radius.circular(12),
                     ),
                     color: const Color(0xFFF3F4F6),
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrl),
-                      fit: BoxFit.cover,
-                    ),
+                  ),
+                  child: Center(
+                    child: Icon(Icons.image, color: Colors.grey, size: 48),
                   ),
                 ),
                 Positioned(

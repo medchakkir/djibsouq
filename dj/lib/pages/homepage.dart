@@ -167,10 +167,7 @@ class _HomePageState extends State<HomePage> {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    image: DecorationImage(
-                      image: NetworkImage(banner['image'] as String),
-                      fit: BoxFit.cover,
-                    ),
+                    color: primaryBlue,
                   ),
                   child: Container(
                     decoration: BoxDecoration(
@@ -308,21 +305,15 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        category['image'] as String,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[200],
-                            child: Center(
-                              child: Icon(
-                                category['icon'] as IconData,
-                                color: primaryBlue,
-                                size: 24,
-                              ),
-                            ),
-                          );
-                        },
+                      child: Container(
+                        color: Colors.grey[200],
+                        child: Center(
+                          child: Icon(
+                            category['icon'] as IconData,
+                            color: primaryBlue,
+                            size: 24,
+                          ),
+                        ),
                       ),
                     ),
                     Container(
