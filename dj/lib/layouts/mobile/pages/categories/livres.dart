@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:dj/data/product_repository.dart';
+import 'package:dj/models/product_models.dart';
 import '../detail_product.dart';
-import '../products.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
@@ -8,52 +9,6 @@ const Color cardGrey = Color(0xFFE5E7EB);
 
 class LivresPage extends StatelessWidget {
   const LivresPage({super.key});
-
-  // 📚 Liste des livres
-  static const List<Map<String, dynamic>> products = [
-    {
-      'id': 401,
-      'name': 'Flutter pour débutants',
-      'price': 39.99,
-      'rating': 4.7,
-      'icon': Icons.menu_book,
-    },
-    {
-      'id': 402,
-      'name': 'Apprendre le Trading',
-      'price': 29.99,
-      'rating': 4.5,
-      'icon': Icons.trending_up,
-    },
-    {
-      'id': 403,
-      'name': 'Clean Code',
-      'price': 49.99,
-      'rating': 4.9,
-      'icon': Icons.code,
-    },
-    {
-      'id': 404,
-      'name': 'Business & Finance',
-      'price': 34.99,
-      'rating': 4.4,
-      'icon': Icons.account_balance,
-    },
-    {
-      'id': 405,
-      'name': 'Roman classique',
-      'price': 19.99,
-      'rating': 4.3,
-      'icon': Icons.auto_stories,
-    },
-    {
-      'id': 406,
-      'name': 'Développement personnel',
-      'price': 24.99,
-      'rating': 4.6,
-      'icon': Icons.psychology,
-    },
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -75,19 +30,22 @@ class LivresPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          final product = products[index];
-          return _buildProductCard(context, product);
-        },
-      ),
+      body: Builder(builder: (context) {
+        final products = ProductRepository.getProductsByCategory('Livres');
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: products.length,
+          itemBuilder: (context, index) {
+            final product = products[index];
+            return _buildProductCard(context, product);
+          },
+        );
+      }),
     );
   }
 
   // 🧱 Carte produit
-  Widget _buildProductCard(BuildContext context, Map<String, dynamic> product) {
+  Widget _buildProductCard(BuildContext context, Product product) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -104,14 +62,23 @@ class LivresPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Icône livre
+          // Image produit
           Container(
-            padding: const EdgeInsets.all(16),
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
-              color: primaryBlue.withOpacity(0.1),
+              color: cardGrey,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(product['icon'], size: 40, color: primaryBlue),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                product.image,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Center(child: Text('📦', style: TextStyle(fontSize: 28))),
+              ),
+            ),
           ),
           const SizedBox(width: 16),
 
@@ -121,7 +88,7 @@ class LivresPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  product['name'],
+                  product.title,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -129,19 +96,8 @@ class LivresPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(Icons.star, size: 16, color: Colors.amber),
-                    const SizedBox(width: 4),
-                    Text(
-                      product['rating'].toString(),
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
                 Text(
-                  '${product['price']} \$',
+                  '\$${product.price.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -155,20 +111,10 @@ class LivresPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.arrow_forward, color: primaryBlue),
             onPressed: () {
-              final detailProduct = Product(
-                id: product['id'].toString(),
-                name: product['name'],
-                category: 'Livres',
-                price: product['price'],
-                rating: product['rating'],
-                image: '📚',
-                reviews: 150,
-              );
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      DetailProductPage(product: detailProduct),
+                  builder: (context) => DetailProductPage(product: product),
                 ),
               );
             },

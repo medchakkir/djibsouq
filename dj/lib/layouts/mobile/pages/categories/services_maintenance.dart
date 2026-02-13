@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dj/models/product_models.dart';
 import '../detail_product.dart';
-import '../products.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
@@ -136,19 +136,18 @@ class ServicesMaintenancePage extends StatelessWidget {
               ),
               onPressed: () {
                 final detailProduct = Product(
-                  id: 'consultation',
-                  name: 'Consultation à domicile',
-                  category: 'Services Maintenance',
+                  id: 9001,
+                  title: 'Consultation à domicile',
                   price: 5.77,
-                  rating: 4.8,
-                  image: '🔧',
-                  reviews: 200,
+                  image: 'https://via.placeholder.com/150',
+                  category: 'Services Maintenance',
+                  description:
+                      'Diagnostic complet, conseils personnalisés et devis transparent',
                 );
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        DetailProductPage(product: detailProduct),
+                    builder: (context) => DetailProductPage(product: detailProduct),
                   ),
                 );
               },

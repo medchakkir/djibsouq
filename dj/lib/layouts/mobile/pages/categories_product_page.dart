@@ -1,5 +1,5 @@
+import 'package:dj/data/product_repository.dart';
 import 'package:flutter/material.dart';
-import 'products.dart';
 
 // Couleurs cohérentes avec ton app
 const Color primaryBlue = Color(0xFF1E3A8A);
@@ -13,7 +13,7 @@ class CategoryProductsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final products = ProductsData.getProductsByCategory(categoryName);
+    final products = ProductRepository.getProductsByCategory(categoryName);
 
     return Scaffold(
       backgroundColor: lightGrey,
@@ -62,8 +62,24 @@ class CategoryProductsPage extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      // Emoji / image
-                      Text(product.image, style: const TextStyle(fontSize: 32)),
+                      // Image placeholder
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: cardGrey,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            product.image,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(child: Text('📦', style: TextStyle(fontSize: 28))),
+                          ),
+                        ),
+                      ),
                       const SizedBox(width: 12),
 
                       // Infos produit
@@ -72,7 +88,7 @@ class CategoryProductsPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              product.name,
+                              product.title,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -80,7 +96,7 @@ class CategoryProductsPage extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${product.price} \$',
+                              '\$${product.price.toStringAsFixed(2)}',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: primaryBlue.withOpacity(0.8),

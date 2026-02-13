@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dj/models/product_models.dart';
 import '../detail_product.dart';
-import '../products.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
@@ -200,19 +200,17 @@ class ServicesLouePage extends StatelessWidget {
                   service['price'].replaceAll(RegExp(r'[^\d.]'), ''),
                 );
                 final detailProduct = Product(
-                  id: service['name'],
-                  name: service['name'],
-                  category: 'Services Location',
+                  id: DateTime.now().millisecondsSinceEpoch,
+                  title: service['name'],
                   price: price,
-                  rating: 4.5,
-                  image: '🔑',
-                  reviews: 100,
+                  image: 'https://via.placeholder.com/150',
+                  category: 'Services',
+                  description: (service['features'] as List).join(', '),
                 );
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        DetailProductPage(product: detailProduct),
+                    builder: (context) => DetailProductPage(product: detailProduct),
                   ),
                 );
               },

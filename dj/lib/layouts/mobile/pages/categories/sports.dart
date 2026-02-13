@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:dj/models/product_models.dart';
+import 'package:dj/data/product_repository.dart';
 import '../detail_product.dart';
-import '../products.dart';
+
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
@@ -9,54 +11,10 @@ const Color cardGrey = Color(0xFFE5E7EB);
 class SportsPage extends StatelessWidget {
   const SportsPage({super.key});
 
-  // ⚽ Liste des produits sports
-  static const List<Map<String, dynamic>> products = [
-    {
-      'id': 301,
-      'name': 'Ballon de football',
-      'price': 39.99,
-      'rating': 4.6,
-      'icon': Icons.sports_soccer,
-    },
-    {
-      'id': 302,
-      'name': 'Chaussures de running',
-      'price': 129.99,
-      'rating': 4.7,
-      'icon': Icons.directions_run,
-    },
-    {
-      'id': 303,
-      'name': 'Vélo tout terrain',
-      'price': 899.99,
-      'rating': 4.5,
-      'icon': Icons.pedal_bike,
-    },
-    {
-      'id': 304,
-      'name': 'Raquette de tennis',
-      'price': 149.99,
-      'rating': 4.4,
-      'icon': Icons.sports_tennis,
-    },
-    {
-      'id': 305,
-      'name': 'Haltères (paire)',
-      'price': 79.99,
-      'rating': 4.6,
-      'icon': Icons.fitness_center,
-    },
-    {
-      'id': 306,
-      'name': 'Tapis de yoga',
-      'price': 29.99,
-      'rating': 4.3,
-      'icon': Icons.self_improvement,
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final products = ProductRepository.getProductsByCategory('Sports');
+
     return Scaffold(
       backgroundColor: lightGrey,
       appBar: AppBar(
@@ -87,7 +45,7 @@ class SportsPage extends StatelessWidget {
   }
 
   // 🧱 Carte produit
-  Widget _buildProductCard(BuildContext context, Map<String, dynamic> product) {
+  Widget _buildProductCard(BuildContext context, Product product) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -104,14 +62,23 @@ class SportsPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Icône produit
+          // Image produit
           Container(
-            padding: const EdgeInsets.all(16),
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
-              color: primaryBlue.withOpacity(0.1),
+              color: cardGrey,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(product['icon'], size: 40, color: primaryBlue),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                product.image,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Center(child: Text('📦', style: TextStyle(fontSize: 28))),
+              ),
+            ),
           ),
           const SizedBox(width: 16),
 
@@ -121,7 +88,7 @@ class SportsPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  product['name'],
+                  product.title,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -129,19 +96,8 @@ class SportsPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(Icons.star, size: 16, color: Colors.amber),
-                    const SizedBox(width: 4),
-                    Text(
-                      product['rating'].toString(),
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
                 Text(
-                  '${product['price']} \$',
+                  '\$${product.price}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -155,20 +111,10 @@ class SportsPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.arrow_forward, color: primaryBlue),
             onPressed: () {
-              final detailProduct = Product(
-                id: product['id'].toString(),
-                name: product['name'],
-                category: 'Sports',
-                price: product['price'],
-                rating: product['rating'],
-                image: '⚽',
-                reviews: 150,
-              );
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      DetailProductPage(product: detailProduct),
+                  builder: (context) => DetailProductPage(product: product),
                 ),
               );
             },

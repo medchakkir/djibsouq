@@ -1,13 +1,14 @@
-import 'package:dj/layouts/mobile/pages/categories_product_page.dart';
+import 'package:dj/models/category_models.dart';
+import 'package:dj/data/product_repository.dart';
+import 'package:dj/widgets/products_horizontal_list.dart';
 import 'package:flutter/material.dart';
 import 'pages/categories.dart';
-import 'pages/products.dart';
-import 'pages/drawer.dart';
+import 'pages/categories_product_page.dart';
+import 'pages/drawer_mobile.dart';
+import 'pages/detail_product.dart';
 
-// Color constants
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
-const Color cardGrey = Color(0xFFE5E7EB);
 
 class HomepageMobile extends StatefulWidget {
   const HomepageMobile({super.key});
@@ -17,25 +18,27 @@ class HomepageMobile extends StatefulWidget {
 }
 
 class _HomepageMobileState extends State<HomepageMobile> {
-  late ValueNotifier<int> _currentOnboarding;
-  late PageController _pageController; // ✅ Créé une fois, pas à chaque build
+  late ValueNotifier<int> _currentBanner;
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    _currentOnboarding = ValueNotifier(0);
+    _currentBanner = ValueNotifier(0);
     _pageController = PageController(viewportFraction: 0.9);
   }
 
   @override
   void dispose() {
-    _currentOnboarding.dispose();
-    _pageController.dispose(); // ✅ Nettoyage correct
+    _currentBanner.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final categories = ProductRepository.categories;
+
     return Scaffold(
       backgroundColor: lightGrey,
       drawer: const AppDrawer(),
@@ -51,34 +54,34 @@ class _HomepageMobileState extends State<HomepageMobile> {
                   children: [
                     _searchBar(),
                     const SizedBox(height: 20),
-                    _onboardingBanner(),
+                    _bannerSection(),
                     const SizedBox(height: 24),
                     _sectionTitle("Categories"),
                     const SizedBox(height: 12),
-                    _categoriesPreview(context),
+                    _categoriesPreview(categories),
                     const SizedBox(height: 32),
-                    ProductsHorizontalList(
-                      title: "Électronique",
-                      products: ProductsData.getProductsByCategory(
-                        'Électronique',
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    ProductsHorizontalList(
-                      title: "Vêtements",
-                      products: ProductsData.getProductsByCategory('Vêtements'),
-                    ),
-                    const SizedBox(height: 32),
-                    ProductsHorizontalList(
-                      title: "Maison",
-                      products: ProductsData.getProductsByCategory('Maison'),
-                    ),
-                    const SizedBox(height: 32),
-                    ProductsHorizontalList(
-                      title: "Sports",
-                      products: ProductsData.getProductsByCategory('Sports'),
-                    ),
-                    const SizedBox(height: 32),
+
+                    /// PRODUITS PAR CATEGORIE (DYNAMIQUE)
+                    ...categories.map((category) {
+                      final products =
+                          ProductRepository.getProductsByCategory(
+                              category.name);
+
+                      if (products.isEmpty) return const SizedBox();
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ProductsHorizontalList(
+                            title: category.name,
+                            products: products,
+                            detailPageBuilder: (product) =>
+                                DetailProductPage(product: product),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+                      );
+                    }).toList(),
                   ],
                 ),
               ),
@@ -89,6 +92,26 @@ class _HomepageMobileState extends State<HomepageMobile> {
     );
   }
 
+  /// ---------------- APP BAR ----------------
+
+  SliverAppBar _buildAppBar() {
+    return SliverAppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      pinned: true,
+      title: const Text(
+        "DJIBSOUQ",
+        style: TextStyle(
+          color: primaryBlue,
+          fontWeight: FontWeight.bold,
+          fontSize: 22,
+        ),
+      ),
+    );
+  }
+
+  /// ---------------- SEARCH ----------------
+
   Widget _searchBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -98,24 +121,40 @@ class _HomepageMobileState extends State<HomepageMobile> {
       ),
       child: const TextField(
         decoration: InputDecoration(
-          hintText: "Search",
+          hintText: "Search products...",
           border: InputBorder.none,
           icon: Icon(Icons.search),
-          suffixIcon: Icon(Icons.mic),
         ),
       ),
     );
   }
 
-  Widget _onboardingBanner() {
+  /// ---------------- BANNER ----------------
+
+  Widget _bannerSection() {
+    final banners = [
+      {
+        'title': 'Big Sale Today',
+        'subtitle': 'Up to 50% discount on selected items',
+      },
+      {
+        'title': 'New Arrivals',
+        'subtitle': 'Discover the latest products',
+      },
+      {
+        'title': 'Free Delivery',
+        'subtitle': 'On orders over 50\$',
+      },
+    ];
+
     return Column(
       children: [
         ValueListenableBuilder<int>(
-          valueListenable: _currentOnboarding,
+          valueListenable: _currentBanner,
           builder: (_, value, __) {
             return Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (index) {
+              children: List.generate(banners.length, (index) {
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -137,70 +176,46 @@ class _HomepageMobileState extends State<HomepageMobile> {
           height: 160,
           child: PageView.builder(
             controller: _pageController,
-            itemCount: 3,
+            itemCount: banners.length,
             onPageChanged: (index) {
-              _currentOnboarding.value = index;
+              _currentBanner.value = index;
             },
             itemBuilder: (_, index) {
-              final banners = [
-                {
-                  'title': 'Big Sale Today',
-                  'subtitle': 'Up to 50% discount\non selected items',
-                  'icon': Icons.local_offer,
-                },
-                {
-                  'title': 'New Arrivals',
-                  'subtitle': 'Check out our latest\nproducts',
-                  'icon': Icons.new_releases,
-                },
-                {
-                  'title': 'Free Delivery',
-                  'subtitle': 'On orders over 50\nFree shipping',
-                  'icon': Icons.local_shipping,
-                },
-              ];
               final banner = banners[index];
               return Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    color: primaryBlue.withOpacity(0.3),
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      gradient: LinearGradient(
-                        colors: [
-                          primaryBlue.withOpacity(0.7),
-                          primaryBlue.withOpacity(0.4),
-                        ],
-                      ),
+                    gradient: LinearGradient(
+                      colors: [
+                        primaryBlue.withOpacity(0.8),
+                        primaryBlue.withOpacity(0.5),
+                      ],
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            banner['title'] as String,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          banner['title']!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            banner['subtitle'] as String,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          banner['subtitle']!,
+                          style: const TextStyle(
+                            color: Colors.white70,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -212,49 +227,21 @@ class _HomepageMobileState extends State<HomepageMobile> {
     );
   }
 
-  SliverAppBar _buildAppBar() {
-    return SliverAppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      pinned: true,
-      title: const Text(
-        "DJIBSOUQ",
-        style: TextStyle(
-          color: primaryBlue,
-          fontWeight: FontWeight.bold,
-          fontSize: 22,
-        ),
-      ),
-    );
-  }
+  /// ---------------- TITRE ----------------
 
   Widget _sectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 
-  Widget _categoriesPreview(BuildContext context) {
-    final categories = [
-      {
-        'name': 'Électronique',
-        'icon': Icons.devices,
-      },
-      {
-        'name': 'Vêtements',
-        'icon': Icons.shopping_bag,
-      },
-      {
-        'name': 'Maison',
-        'icon': Icons.home,
-      },
-      {
-        'name': 'Sports',
-        'icon': Icons.sports_soccer,
-      },
-    ];
+  /// ---------------- CATEGORIES ----------------
 
+  Widget _categoriesPreview(List<Category> categories) {
     return Column(
       children: [
         GridView.builder(
@@ -268,13 +255,14 @@ class _HomepageMobileState extends State<HomepageMobile> {
           ),
           itemBuilder: (_, index) {
             final category = categories[index];
+
             return GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => CategoryProductsPage(
-                      categoryName: category['name'] as String,
+                      categoryName: category.name,
                     ),
                   ),
                 );
@@ -290,53 +278,16 @@ class _HomepageMobileState extends State<HomepageMobile> {
                     ),
                   ],
                 ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        color: Colors.grey[200],
-                        child: Center(
-                          child: Icon(
-                            category['icon'] as IconData,
-                            color: primaryBlue,
-                            size: 40,
-                          ),
-                        ),
-                      ),
+                child: Center(
+                  child: Text(
+                    category.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: primaryBlue,
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.5),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            category['name'] as String,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             );
@@ -350,7 +301,7 @@ class _HomepageMobileState extends State<HomepageMobile> {
               MaterialPageRoute(builder: (_) => const CategoriesPage()),
             );
           },
-          child: Text(
+          child: const Text(
             'Voir toutes les catégories →',
             style: TextStyle(
               color: primaryBlue,

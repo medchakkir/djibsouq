@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:dj/data/product_repository.dart';
 import 'categories/electronique.dart';
 import 'categories/vetements.dart';
 import 'categories/maison.dart';
@@ -16,64 +17,34 @@ const Color cardGrey = Color(0xFFE5E7EB);
 class CategoriesPage extends StatelessWidget {
   const CategoriesPage({super.key});
 
-  // Liste des catégories
-  static const List<Map<String, dynamic>> categories = [
-    {
-      'name': 'Électronique',
-      'icon': Icons.devices,
-      'color': Color(0xFF3B82F6),
-      'image':
-          'https://via.placeholder.com/400x300/3B82F6/FFFFFF?text=Electronique',
-    },
-    {
-      'name': 'Vêtements',
-      'icon': Icons.shopping_bag,
-      'color': Color(0xFFEC4899),
-      'image':
-          'https://via.placeholder.com/400x300/EC4899/FFFFFF?text=Vetements',
-    },
-    {
-      'name': 'Maison',
-      'icon': Icons.home,
-      'color': Color(0xFF10B981),
-      'image': 'https://via.placeholder.com/400x300/10B981/FFFFFF?text=Maison',
-    },
-    {
-      'name': 'Sports',
-      'icon': Icons.sports_soccer,
-      'color': Color(0xFFF59E0B),
-      'image': 'https://via.placeholder.com/400x300/F59E0B/FFFFFF?text=Sports',
-    },
-    {
-      'name': 'Livres',
-      'icon': Icons.library_books,
-      'color': Color(0xFF8B5CF6),
-      'image': 'https://via.placeholder.com/400x300/8B5CF6/FFFFFF?text=Livres',
-    },
-    {
-      'name': 'Beauté',
-      'icon': Icons.spa,
-      'color': Color(0xFFF43F5E),
-      'image': 'https://via.placeholder.com/400x300/F43F5E/FFFFFF?text=Beaute',
-    },
-    {
-      'name': 'Services loué',
-      'icon': Icons.key,
-      'color': Color(0xFF06B6D4),
-      'image':
-          'https://via.placeholder.com/400x300/06B6D4/FFFFFF?text=Services+loue',
-    },
-    {
-      'name': 'Services maintenance',
-      'icon': Icons.build,
-      'color': Color(0xFFEF4444),
-      'image':
-          'https://via.placeholder.com/400x300/EF4444/FFFFFF?text=Services+maintenance',
-    },
-  ];
+  // Mapping des icônes
+  static IconData _getIcon(String iconName) {
+    switch (iconName) {
+      case 'devices':
+        return Icons.devices;
+      case 'shopping_bag':
+        return Icons.shopping_bag;
+      case 'home':
+        return Icons.home;
+      case 'sports_soccer':
+        return Icons.sports_soccer;
+      case 'library_books':
+        return Icons.library_books;
+      case 'spa':
+        return Icons.spa;
+      case 'key':
+        return Icons.key;
+      case 'build':
+        return Icons.build;
+      default:
+        return Icons.category;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final categories = ProductRepository.categories;
+    
     return Scaffold(
       backgroundColor: lightGrey,
       appBar: AppBar(
@@ -106,11 +77,11 @@ class CategoriesPage extends StatelessWidget {
           itemBuilder: (context, index) {
             final category = categories[index];
             return _buildCategoryCard(
-              name: category['name'],
-              icon: category['icon'],
-              color: category['color'],
-              imageUrl: category['image'],
-              onTap: () => _openCategory(context, category['name']),
+              name: category.name,
+              icon: _getIcon(category.icon),
+              color: category.color,
+              imageUrl: category.image,
+              onTap: () => _openCategory(context, category.name),
             );
           },
         ),

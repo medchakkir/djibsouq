@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'products.dart';
+import 'package:dj/models/product_models.dart';
+
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
@@ -60,25 +61,31 @@ class _DetailProductPageState extends State<DetailProductPage> {
                   bottomLeft: Radius.circular(16),
                   bottomRight: Radius.circular(16),
                 ),
-                child: Container(
-                  color: Colors.grey[200],
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.shopping_bag,
-                          size: 80,
-                          color: primaryBlue,
+                child: Image.network(
+                  widget.product.image,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[200],
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.image_not_supported,
+                              size: 80,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Image indisponible',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Produit',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -90,7 +97,7 @@ class _DetailProductPageState extends State<DetailProductPage> {
                 children: [
                   // Title
                   Text(
-                    widget.product.name,
+                    widget.product.title,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -103,24 +110,16 @@ class _DetailProductPageState extends State<DetailProductPage> {
                     style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 16),
-                  // Rating and Reviews
-                  Row(
-                    children: [
-                      _buildRatingStars(widget.product.rating),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${widget.product.rating}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '(${widget.product.reviews} avis)',
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
+                  // Description Preview
+                  Text(
+                    widget.product.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                      height: 1.5,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   // Price
@@ -189,7 +188,7 @@ class _DetailProductPageState extends State<DetailProductPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              '$quantity x ${widget.product.name} ajouté au panier',
+                              '$quantity x ${widget.product.title} ajouté au panier',
                             ),
                             backgroundColor: Colors.green,
                           ),
@@ -232,18 +231,6 @@ class _DetailProductPageState extends State<DetailProductPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildRatingStars(double rating) {
-    return Row(
-      children: List.generate(5, (index) {
-        return Icon(
-          index < rating.toInt() ? Icons.star : Icons.star_border,
-          color: Colors.amber,
-          size: 18,
-        );
-      }),
     );
   }
 

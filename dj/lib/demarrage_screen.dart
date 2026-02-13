@@ -78,7 +78,7 @@ class _DemarrageScreenState extends State<DemarrageScreen>
     // ✅ Différencier mobile et web
     if (kIsWeb) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeWebPage()),
+        MaterialPageRoute(builder: (_) => const HomepageWeb()),
       );
     } else {
       Navigator.of(context).pushReplacement(
