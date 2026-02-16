@@ -1,13 +1,16 @@
 import 'package:dj/layouts/web/Promotion_Section.dart';
+import 'package:dj/models/category_models.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:dj/widgets/web_header.dart';
-
+import 'package:dj/data/product_repository.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
 const Color cardGrey = Color(0xFFFFFFFF);
 const Color textDark = Color(0xFF111827);
+
+List<Category> categories = ProductRepository.categories;
 
 Widget _deviceImage({
   required String image,
@@ -24,8 +27,7 @@ Widget _deviceImage({
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(
-                  isPrimary ? 0.25 : 0.15),
+              color: Colors.black.withOpacity(isPrimary ? 0.25 : 0.15),
               blurRadius: isPrimary ? 40 : 25,
               offset: const Offset(0, 20),
             ),
@@ -41,9 +43,38 @@ Widget _deviceImage({
   );
 }
 
-
-class HomepageWeb extends StatelessWidget {
+class HomepageWeb extends StatefulWidget {
   const HomepageWeb({super.key});
+
+  @override
+  State<HomepageWeb> createState() => _HomepageWebState();
+}
+
+class _HomepageWebState extends State<HomepageWeb> {
+  // selected category pour filtrer les produits
+  String selectedCategory = ProductRepository.categories.first.name;
+
+  // Retourne l'IconData correspondant au nom d'icône de la catégorie
+IconData getIconData(String iconName) {
+  switch (iconName) {
+    case 'star':
+    case 'stars':
+      return Icons.star;
+    case 'devices':
+      return Icons.devices;
+    case 'shopping_bag':
+      return Icons.shopping_bag;
+    case 'home':
+      return Icons.home;
+    case 'sports_soccer':
+      return Icons.sports_soccer;
+    case 'add':
+      return Icons.add;
+    default:
+      return Icons.category;
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -66,71 +97,62 @@ class HomepageWeb extends StatelessWidget {
     );
   }
 
-
-Widget _buildHeroSection() {
-  return const HeroGalaxy();
-}
-
-
-
-
-
+  Widget _buildHeroSection() {
+    return const HeroGalaxy();
+  }
 
   // ================= CATEGORIES =================
   Widget _buildCategoriesBar() {
-    List<Map<String, dynamic>> categories = [
-      {"icon": Icons.new_releases, "title": "New Arrivals"},
-      {"icon": Icons.star, "title": "Best Sellers"},
-      {"icon": Icons.headphones, "title": "Headphones"},
-      {"icon": Icons.devices, "title": "Smart Devices"},
-      {"icon": Icons.gamepad, "title": "Gaming"},
-    ];
-
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 30),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: categories
-            .map((cat) => Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 15),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(cat["icon"], color: primaryBlue),
-                      const SizedBox(width: 10),
-                      Text(cat["title"]),
-                    ],
-                  ),
-                ))
-            .toList(),
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 700),
+        curve: Curves.easeOutCubic,
+        builder: (context, value, child) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(categories.length, (i) {
+              final cat = categories[i];
+              return AnimatedOpacity(
+                opacity: 0.8,
+                duration: const Duration(milliseconds: 400),
+                child: _AnimatedCategoryCard(
+                  icon: getIconData(cat.icon), // tu peux changer selon cat.icon si tu veux
+                  title: cat.name,
+                  color: cat.color,
+                  delay: i * 80,
+                  onTap: () {
+                    setState(() {
+                      selectedCategory = cat.name;
+                    });
+                  },
+                ),
+              );
+            }),
+          );
+        },
       ),
     );
   }
 
   // ================= FEATURED PRODUCTS =================
   Widget _buildFeaturedProducts() {
-    List<Map<String, dynamic>> products = [
-      {"title": "Smart Watch", "price": "199.00"},
-      {"title": "Headphones", "price": "129.00"},
-      {"title": "Smart Speaker", "price": "79.00"},
-      {"title": "Gaming Pad", "price": "59.00"},
-    ];
+    final products = ProductRepository.getProductsByCategory(selectedCategory);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("FEATURED PRODUCTS",
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: textDark)),
+          const Text(
+            "FEATURED PRODUCTS",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: textDark,
+            ),
+          ),
           const SizedBox(height: 20),
           GridView.builder(
             shrinkWrap: true,
@@ -152,19 +174,22 @@ Widget _buildHeroSection() {
                 child: Column(
                   children: [
                     Expanded(
-                      child: Image.network(
-                          "https://i.imgur.com/Y9QZ6Gg.png"),
+                      child: Center(
+                        child: Text(
+                          product.image, // emoji ou image placeholder
+                          style: const TextStyle(fontSize: 48),
+                        ),
+                      ),
                     ),
-                    Text(product["title"]),
+                    Text(product.title),
                     const SizedBox(height: 8),
-                    Text("\$${product["price"]}",
+                    Text("\$${product.price}",
                         style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: primaryBlue)),
                     const SizedBox(height: 10),
                     ElevatedButton(
-                        onPressed: () {},
-                        child: const Text("Add to Cart"))
+                        onPressed: () {}, child: const Text("Add to Cart"))
                   ],
                 ),
               );
@@ -175,103 +200,99 @@ Widget _buildHeroSection() {
     );
   }
 
-    // ================= App download =================
- Widget _buildDownloadSection() {
-  return Container(
-    height: 280, // ✅ hauteur augmentée
-    padding: const EdgeInsets.symmetric(horizontal: 20),
-    decoration: const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [
-          Color.fromARGB(255, 226, 226, 228),
-          Color.fromARGB(255, 43, 62, 90),
-        ],
-      ),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-
-        /// ================= LEFT TEXT =================
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.asset(
-              "assets/images/personne.png",
-              width: 200,
-              scale: 1.2,
-              fit: BoxFit.contain,
-            ),
-            
+  // ================= App download =================
+  Widget _buildDownloadSection() {
+    return Container(
+      height: 280,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color.fromARGB(255, 226, 226, 228),
+            Color.fromARGB(255, 43, 62, 90),
           ],
         ),
-
-        /// ================= RIGHT DEVICES =================
-        SizedBox(
-          height: 300,
-          width: 700,
-          child: Stack(
-            alignment: Alignment.center,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          /// LEFT TEXT
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              /// Glow background (effet premium)
-              Container(
-                width: 420,
-                height: 420,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      Colors.white.withOpacity(0.15),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-
-              /// 💻 PC (arrière)
-              Positioned(
-                left: 40,
-                child: _deviceImage(
-                  image: "assets/images/swift_computer.png",
-                  height: 280,
-                  scale: 1.1,
-                  opacity: 0.95,
-                ),
-              ),
-
-              /// 📱 Tablette (milieu)
-              Positioned(
-                right: 80,
-                bottom: 20,
-                child: _deviceImage(
-                  image: "assets/images/swift_pad.png",
-                  height: 200,
-                  scale: 1.05,
-                ),
-              ),
-
-              /// 📱 Téléphone (avant focus)
-              Positioned(
-                bottom: 20,
-                child: _deviceImage(
-                  image: "assets/images/swift_phone.png",
-                  height: 200,
-                  scale: 1.05,
-                  isPrimary: true,
-                ),
+              Image.asset(
+                "assets/images/personne.png",
+                width: 200,
+                scale: 1.2,
+                fit: BoxFit.contain,
               ),
             ],
           ),
-        ),
-      ],
-    ),
-  );
-}
 
+          /// RIGHT DEVICES
+          SizedBox(
+            height: 300,
+            width: 700,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                /// Glow background
+                Container(
+                  width: 420,
+                  height: 420,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        Colors.white.withOpacity(0.15),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+
+                /// PC
+                Positioned(
+                  left: 40,
+                  child: _deviceImage(
+                    image: "assets/images/swift_computer.png",
+                    height: 280,
+                    scale: 1.1,
+                    opacity: 0.95,
+                  ),
+                ),
+
+                /// Tablette
+                Positioned(
+                  right: 80,
+                  bottom: 20,
+                  child: _deviceImage(
+                    image: "assets/images/swift_pad.png",
+                    height: 200,
+                    scale: 1.05,
+                  ),
+                ),
+
+                /// Téléphone
+                Positioned(
+                  bottom: 20,
+                  child: _deviceImage(
+                    image: "assets/images/swift_phone.png",
+                    height: 200,
+                    scale: 1.05,
+                    isPrimary: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   // ================= WHY SHOP =================
   Widget _buildWhyShop() {
@@ -325,12 +346,7 @@ class _WhyItem extends StatelessWidget {
   }
 }
 
-
-
-
-
 // HERO GALAXY BACKGROUND
-
 class HeroGalaxy extends StatefulWidget {
   const HeroGalaxy({super.key});
 
@@ -340,14 +356,13 @@ class HeroGalaxy extends StatefulWidget {
 
 class _HeroGalaxyState extends State<HeroGalaxy>
     with SingleTickerProviderStateMixin {
-
   late final AnimationController _controller;
   final Random _random = Random();
-  late final List<Offset> _stars; // normalized positions (0..1)
+  late final List<Offset> _stars;
   late final List<double> _starSizes;
   late final List<double> _starOpacities;
   static const int _starCount = 180;
-  static const double _movementRange = 120.0; // pixels moved over full cycle
+  static const double _movementRange = 120.0;
 
   @override
   void initState() {
@@ -358,7 +373,6 @@ class _HeroGalaxyState extends State<HeroGalaxy>
       duration: const Duration(seconds: 10),
     )..repeat(count: 5000);
 
-    // Pre-generate star positions/sizes/opacities so the animation is smooth
     _stars = List.generate(
       _starCount,
       (_) => Offset(_random.nextDouble(), _random.nextDouble()),
@@ -387,12 +401,10 @@ class _HeroGalaxyState extends State<HeroGalaxy>
       height: 350,
       child: Stack(
         children: [
-
-          /// 🌑 Dark overlay (background)
+          /// Dark overlay
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(0),
                 gradient: LinearGradient(
                   colors: [
                     const Color(0xFF0F172A).withOpacity(0.95),
@@ -402,8 +414,7 @@ class _HeroGalaxyState extends State<HeroGalaxy>
               ),
             ),
           ),
-
-          /// 🌌 Animated background (stars on top of overlay)
+          /// Stars
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _controller,
@@ -418,10 +429,9 @@ class _HeroGalaxyState extends State<HeroGalaxy>
               ),
             ),
           ),
-
           /// CONTENT
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 60 ,vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 10),
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final double maxW = constraints.maxWidth;
@@ -489,7 +499,6 @@ class _HeroGalaxyState extends State<HeroGalaxy>
                               ),
                             ),
                           ),
-
                         ],
                       ),
                     ),
@@ -506,7 +515,7 @@ class _HeroGalaxyState extends State<HeroGalaxy>
 
 class GalaxyPainter extends CustomPainter {
   final double progress;
-  final List<Offset> stars; // normalized positions (0..1)
+  final List<Offset> stars;
   final List<double> sizes;
   final List<double> opacities;
   final double movementRange;
@@ -529,7 +538,6 @@ class GalaxyPainter extends CustomPainter {
           size.height;
 
       paint.color = Colors.white.withOpacity(opacities[i]);
-
       canvas.drawCircle(Offset(x, y), sizes[i], paint);
     }
   }
@@ -537,5 +545,115 @@ class GalaxyPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant GalaxyPainter oldDelegate) {
     return oldDelegate.progress != progress;
+  }
+}
+
+// Animated Category Card (design inchangé)
+class _AnimatedCategoryCard extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final Color color;
+  final int delay;
+  final VoidCallback? onTap;
+  const _AnimatedCategoryCard({
+    required this.icon,
+    required this.title,
+    required this.color,
+    this.delay = 0,
+    this.onTap,
+  });
+
+  @override
+  State<_AnimatedCategoryCard> createState() => _AnimatedCategoryCardState();
+}
+
+class _AnimatedCategoryCardState extends State<_AnimatedCategoryCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnim;
+  bool _hovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _scaleAnim = Tween<double>(begin: 1, end: 1.08).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => _controller.forward(),
+      onExit: (_) => _controller.reverse(),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: ScaleTransition(
+          scale: _scaleAnim,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            margin: const EdgeInsets.symmetric(horizontal: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.color.withOpacity(0.2),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+              border: Border.all(
+                color: _hovered ? widget.color : Colors.transparent,
+                width: 2,
+              ),
+              image: const DecorationImage(
+                image: AssetImage("assets/images/bg_stars_wb.png"),
+                fit: BoxFit.cover,
+                opacity: 1,
+              ),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: widget.color.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Icon(widget.icon, color: widget.color, size: 28),
+                  ),
+                  const SizedBox(width: 14),
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

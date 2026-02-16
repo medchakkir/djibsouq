@@ -30,7 +30,7 @@ class _buildHeaderState extends State<buildHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final navItems = ["Home", "Categories", "Deals", "About", "Contact"];
+    final navItems = ["Home", "Categories", "Products", "Promo"];
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
