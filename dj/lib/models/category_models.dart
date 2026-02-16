@@ -14,4 +14,6 @@ class Category {
     required this.icon,
     required this.color,
   });
+
+  String? get backgroundImage => null;
 }

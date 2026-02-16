@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../home_web.dart';
 import 'products_web.dart';
 import 'cart_web.dart';
 import 'favorites_web.dart';
 import 'categories_web.dart';
+import 'package:dj/widgets/web_header.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
@@ -20,7 +22,7 @@ class ProfileWeb extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildHeader(context),
+            buildHeader(currentPage: "Profil",),
             _buildProfileContent(),
             _buildFooter(),
           ],
@@ -29,104 +31,7 @@ class ProfileWeb extends StatelessWidget {
     );
   }
 
-  // ================= HEADER =================
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
-      color: Colors.white,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomepageWeb()),
-              );
-            },
-            child: Row(
-              children: const [
-                Icon(Icons.play_circle_fill, color: primaryBlue, size: 32),
-                SizedBox(width: 8),
-                Text("DJIBSOUQ",
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: primaryBlue)),
-              ],
-            ),
-          ),
-          Row(
-            children: [
-              _NavItem("Home", onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomepageWeb()),
-                );
-              }),
-              _NavItem("Categories", onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CategoriesWeb()),
-                );
-              }),
-              _NavItem("Deals", onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProductsWeb(),
-                  ),
-                );
-              }),
-              _NavItem("About", onTap: () {}),
-              _NavItem("Contact", onTap: () {}),
-              const SizedBox(width: 30),
-              GestureDetector(
-                onTap: () {},
-                child: const Icon(Icons.search),
-              ),
-              const SizedBox(width: 15),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ProfileWeb(),
-                    ),
-                  );
-                },
-                child: const Icon(Icons.person_outline),
-              ),
-              const SizedBox(width: 15),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FavoritesWeb(),
-                    ),
-                  );
-                },
-                child: const Icon(Icons.favorite_border),
-              ),
-              const SizedBox(width: 15),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CartWeb(),
-                    ),
-                  );
-                },
-                child: const Icon(Icons.shopping_cart_outlined),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
-  }
+
 
   // ================= PROFILE CONTENT =================
   Widget _buildProfileContent() {

@@ -14,7 +14,6 @@ const Color cardGrey = Color(0xFFFFFFFF);
 const Color textDark = Color(0xFF111827);
 
 class VetementsCategoryWeb extends StatefulWidget {
-  const VetementsCategoryWeb({super.key});
 
   @override
   State<VetementsCategoryWeb> createState() => _VetementsCategoryWebState();

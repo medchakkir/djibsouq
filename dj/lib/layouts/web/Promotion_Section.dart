@@ -16,22 +16,22 @@ class PromotionSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Section promotion à gauche
-              Expanded(
-                flex: 7,
+              SizedBox(
+                width: constraints.maxWidth * 0.6,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 40, right: 20),
                   child: PromotionSlider(),
                 ),
               ),
               // Bloc assurance à droite
-              Expanded(
-                flex: 4,
+              SizedBox(
+                width: constraints.maxWidth * 0.4,
                 child: Column(
                   children: [
                     // Bloc assurance
                     Container(
                       margin: const EdgeInsets.only(right: 40, bottom: 24),
-                      padding: const EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(24),
@@ -48,7 +48,7 @@ class PromotionSection extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: const [
                             Icon(Icons.verified_user, color: Colors.greenAccent, size: 28),
-                            SizedBox(height: 10),
+                            SizedBox(height: 8),
                             Text(
                               "Votre sécurité, notre priorité",
                               style: TextStyle(
@@ -102,8 +102,8 @@ class PromotionSection extends StatelessWidget {
                             "Des prix imbattables, une livraison rapide partout à Djibouti, un large choix de produits high-tech et un service client à l'écoute. Essayez l'expérience Djibsouq !",
                             style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 15,
-                              height: 1.6,
+                              fontSize: 12,
+                              height: 1.4,
                             ),
                           ),
                         ],
@@ -133,7 +133,7 @@ class PromotionSection extends StatelessWidget {
                             "Des prix pour tous",
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -142,8 +142,8 @@ class PromotionSection extends StatelessWidget {
                             "Profitez d'offres exclusives et de tarifs compétitifs toute l'année. Chez Djibsouq, la technologie est accessible à tous les budgets !",
                             style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 15,
-                              height: 1.6,
+                              fontSize: 12,
+                              height: 1.4,
                             ),
                           ),
                         ],
