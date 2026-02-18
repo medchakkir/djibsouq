@@ -178,21 +178,21 @@ class _PromotionSliderState extends State<PromotionSlider> {
       price: "\$299",
       oldPrice: "\$399",
       discount: "-25%",
-      image: "assets/images/a54.png",
+      image: "assets/images/A54.jpg",
     ),
     PromotionModel(
       title: "iPhone 14 Pro",
       price: "\$899",
       oldPrice: "\$999",
       discount: "-10%",
-      image: "assets/images/iphone.png",
+      image: "assets/images/iphone14_pro.jpg",
     ),
     PromotionModel(
       title: "Google Pixel 8",
       price: "\$599",
       oldPrice: "\$699",
       discount: "-15%",
-      image: "assets/images/pixel.png",
+      image: "assets/images/googlepixel_8.jpg",
     ),
   ];
 

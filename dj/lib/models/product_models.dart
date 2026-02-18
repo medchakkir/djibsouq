@@ -7,6 +7,8 @@ class Product {
   final String description;
   final double rating;
   final int reviews;
+  final bool isBestSeller;
+
 
   Product({
     required this.id,
@@ -17,6 +19,8 @@ class Product {
     required this.description,
     this.rating = 4.5,
     this.reviews = 0,
+    this.isBestSeller = false,
   });
+
 }
 

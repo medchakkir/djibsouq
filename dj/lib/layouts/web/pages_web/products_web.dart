@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dj/data/product_repository.dart';
 import 'package:dj/models/product_models.dart';
-import '../home_web.dart';
-import 'categories_web.dart';
-import 'cart_web.dart';
-import 'favorites_web.dart';
-import 'profile_web.dart';
 import 'package:dj/widgets/web_header.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);

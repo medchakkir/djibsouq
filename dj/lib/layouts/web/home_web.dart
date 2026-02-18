@@ -1,9 +1,12 @@
-import 'package:dj/layouts/web/Promotion_Section.dart';
+import 'dart:async';
+import 'dart:ui';
+import 'package:dj/layouts/web/pages_web/categories_web.dart';
 import 'package:dj/models/category_models.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:dj/widgets/web_header.dart';
 import 'package:dj/data/product_repository.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
@@ -76,6 +79,40 @@ IconData getIconData(String iconName) {
 }
 
 
+Widget _buildBestSellers() {
+  final bestSellers = ProductRepository.getBestSellers();
+
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 60),
+    color: Colors.white,
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1200),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "🔥 Best Sellers",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: textDark,
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            SizedBox(
+              height: 260, // 👈 hauteur compacte
+              child: _BestSellerCarousel(products: bestSellers),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,12 +122,13 @@ IconData getIconData(String iconName) {
           children: [
             buildHeader(currentPage: "Home"),
             _buildHeroSection(),
-            PromotionSection(),
+            _buildBestSellers(),
             _buildCategoriesBar(),
             _buildFeaturedProducts(),
-            _buildWhyShop(),
             _buildDownloadSection(),
-            _buildFooter(),
+            _buildWhyShop(),
+            _buildNewsletterModern2(),
+            _buildFooterAmazonStyle(),
           ],
         ),
       ),
@@ -101,70 +139,84 @@ IconData getIconData(String iconName) {
     return const HeroGalaxy();
   }
 
-  // ================= CATEGORIES =================
-  Widget _buildCategoriesBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: TweenAnimationBuilder<double>(
-        tween: Tween<double>(begin: 0, end: 1),
-        duration: const Duration(milliseconds: 700),
-        curve: Curves.easeOutCubic,
-        builder: (context, value, child) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(categories.length, (i) {
-              final cat = categories[i];
-              return AnimatedOpacity(
-                opacity: 0.8,
-                duration: const Duration(milliseconds: 400),
-                child: _AnimatedCategoryCard(
-                  icon: getIconData(cat.icon), // tu peux changer selon cat.icon si tu veux
-                  title: cat.name,
-                  color: cat.color,
-                  delay: i * 80,
-                  onTap: () {
+Widget _buildCategoriesBar() {
+  final allCategories = [
+    ...categories,
+    Category(
+      name: "Toutes",
+      icon: "list_alt",
+      color: Colors.purpleAccent.shade400, id: 10000, image: '',
+    ),
+  ];
+
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+    child: Row(
+      children: List.generate(allCategories.length, (i) {
+        final cat = allCategories[i];
+
+        return Flexible(
+          fit: FlexFit.tight,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _AnimatedCategoryCard(
+                icon: getIconData(cat.icon),
+                title: cat.name,
+                color: cat.color,
+                delay: i * 80,
+                onTap: () {
+                  if (i == allCategories.length - 1) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CategoriesWeb()),
+                    );
+                  } else {
                     setState(() {
                       selectedCategory = cat.name;
                     });
-                  },
-                ),
-              );
-            }),
-          );
-        },
-      ),
-    );
-  }
+                  }
+                },
+              ),
+            ),
+          ),
+        );
+      }),
+    ),
+  );
+}
 
   // ================= FEATURED PRODUCTS =================
   Widget _buildFeaturedProducts() {
     final products = ProductRepository.getProductsByCategory(selectedCategory);
+    final limitedProducts = products.length > 7 ? products.sublist(0, 7) : products;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "FEATURED PRODUCTS",
-            style: TextStyle(
+          Text(
+            selectedCategory,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: textDark,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: products.length,
+            itemCount: limitedProducts.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 4,
-                mainAxisSpacing: 20,
-                crossAxisSpacing: 20,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
                 childAspectRatio: 0.8),
             itemBuilder: (context, index) {
-              final product = products[index];
+              final product = limitedProducts[index];
               return Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
@@ -194,105 +246,64 @@ IconData getIconData(String iconName) {
                 ),
               );
             },
-          )
+          ),
+          if (products.length > 7)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  // TODO: Navigate to category product page
+                  // Navigator.push(context, MaterialPageRoute(builder: (_) => CategoryProductsPage(category: selectedCategory)));
+                },
+                child: Text('Voir plus de produits', style: TextStyle(color: primaryBlue)),
+              ),
+            ),
         ],
       ),
     );
   }
 
   // ================= App download =================
-  Widget _buildDownloadSection() {
-    return Container(
-      height: 280,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Color.fromARGB(255, 226, 226, 228),
-            Color.fromARGB(255, 43, 62, 90),
-          ],
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          /// LEFT TEXT
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Image.asset(
-                "assets/images/personne.png",
-                width: 200,
-                scale: 1.2,
-                fit: BoxFit.contain,
-              ),
-            ],
-          ),
-
-          /// RIGHT DEVICES
-          SizedBox(
-            height: 300,
-            width: 700,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                /// Glow background
-                Container(
-                  width: 420,
-                  height: 420,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        Colors.white.withOpacity(0.15),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-
-                /// PC
-                Positioned(
-                  left: 40,
-                  child: _deviceImage(
-                    image: "assets/images/swift_computer.png",
-                    height: 280,
-                    scale: 1.1,
-                    opacity: 0.95,
-                  ),
-                ),
-
-                /// Tablette
-                Positioned(
-                  right: 80,
-                  bottom: 20,
-                  child: _deviceImage(
-                    image: "assets/images/swift_pad.png",
-                    height: 200,
-                    scale: 1.05,
-                  ),
-                ),
-
-                /// Téléphone
-                Positioned(
-                  bottom: 20,
-                  child: _deviceImage(
-                    image: "assets/images/swift_phone.png",
-                    height: 200,
-                    scale: 1.05,
-                    isPrimary: true,
-                  ),
-                ),
-              ],
-            ),
-          ),
+ Widget _buildDownloadSection() {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 60),
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          Color(0xFF0F172A),
+          Color(0xFF1E293B),
+          Color(0xFF1E3A8A),
         ],
       ),
-    );
-  }
+    ),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final isSmall = constraints.maxWidth < 1100;
+
+        return isSmall
+            ? Column(
+                children: [
+                  _downloadTextSection(),
+                  const SizedBox(height: 60),
+                  _downloadDeviceSection(),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: _downloadTextSection()),
+                  const SizedBox(width: 40),
+                  Expanded(child: _downloadDeviceSection()),
+                ],
+              );
+      },
+    ),
+  );
+}
+
+
 
   // ================= WHY SHOP =================
   Widget _buildWhyShop() {
@@ -555,12 +566,17 @@ class _AnimatedCategoryCard extends StatefulWidget {
   final Color color;
   final int delay;
   final VoidCallback? onTap;
+  final double? width; // nouvelle
+  final double? height; // nouvelle
+
   const _AnimatedCategoryCard({
     required this.icon,
     required this.title,
     required this.color,
     this.delay = 0,
     this.onTap,
+    this.width,
+    this.height,
   });
 
   @override
@@ -602,8 +618,10 @@ class _AnimatedCategoryCardState extends State<_AnimatedCategoryCard>
           scale: _scaleAnim,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            margin: const EdgeInsets.symmetric(horizontal: 18),
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+            width: widget.width ?? 180,   // 👈 largeur fixe
+            height: widget.height ?? 100, // 👈 hauteur fixe
+            margin: const EdgeInsets.symmetric(horizontal: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
@@ -640,12 +658,15 @@ class _AnimatedCategoryCardState extends State<_AnimatedCategoryCard>
                     child: Icon(widget.icon, color: widget.color, size: 28),
                   ),
                   const SizedBox(width: 14),
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -656,4 +677,762 @@ class _AnimatedCategoryCardState extends State<_AnimatedCategoryCard>
       ),
     );
   }
+}
+
+// Best Seller Carousel (design inchangé)
+
+class _BestSellerCarousel extends StatefulWidget {
+  final List<dynamic> products;
+
+  const _BestSellerCarousel({required this.products});
+
+  @override
+  State<_BestSellerCarousel> createState() => _BestSellerCarouselState();
+}
+
+class _BestSellerCarouselState extends State<_BestSellerCarousel> {
+  late final PageController _controller;
+  Timer? _timer;
+  int _currentPage = 0;
+  bool _isHovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = PageController(viewportFraction: 0.25);
+
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_isHovered) return;
+
+      _currentPage++;
+      _controller.animateToPage(
+        _currentPage,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => _isHovered = true,
+      onExit: (_) => _isHovered = false,
+      child: PageView.builder(
+        controller: _controller,
+        itemBuilder: (context, index) {
+          final product =
+              widget.products[index % widget.products.length];
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: _ModernBestSellerCard(product: product),
+          );
+        },
+      ),
+    );
+  }
+}
+
+
+
+// Best Seller Card (design modernisé)
+class _ModernBestSellerCard extends StatefulWidget {
+  final dynamic product;
+  const _ModernBestSellerCard({required this.product});
+
+  @override
+  State<_ModernBestSellerCard> createState() =>
+      _ModernBestSellerCardState();
+}
+
+class _ModernBestSellerCardState extends State<_ModernBestSellerCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+  late Animation<double> _elevation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+
+    _scale = Tween<double>(begin: 1, end: 1.04).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    _elevation = Tween<double>(begin: 6, end: 18).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => _controller.forward(),
+      onExit: (_) => _controller.reverse(),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scale.value,
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.white.withOpacity(0.85),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: _elevation.value,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  /// TOP ROW
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Colors.redAccent, Colors.orange],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          "HOT",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const Icon(Icons.favorite_border,
+                          size: 18, color: Colors.grey),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  /// IMAGE
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        widget.product.image,
+                        style: const TextStyle(fontSize: 42),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  /// TITLE
+                  Text(
+                    widget.product.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// PRICE ROW
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "\$${widget.product.price}",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: primaryBlue,
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: primaryBlue,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.all(6),
+                        child: const Icon(
+                          Icons.shopping_cart,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+
+
+
+ // DOWNLOAD SECTION - DEVICE IMAGES
+
+Widget _featureItem(IconData icon, String text) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Row(
+      children: [
+        Icon(icon, color: Colors.greenAccent.shade400, size: 22),
+        const SizedBox(width: 12),
+        Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 16,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _downloadDeviceSection() {
+  return SizedBox(
+    height: 420,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        /// Glow background
+        Container(
+          width: 420,
+          height: 420,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [
+                Colors.blueAccent.withOpacity(0.25),
+                Colors.transparent,
+              ],
+            ),
+          ),
+        ),
+
+        /// PC
+        Positioned(
+          left: 20,
+          child: _deviceImage(
+            image: "assets/images/swift_computer.png",
+            height: 300,
+            scale: 1.05,
+            opacity: 0.95,
+          ),
+        ),
+
+        /// Tablet
+        Positioned(
+          right: 50,
+          bottom: 20,
+          child: _deviceImage(
+            image: "assets/images/swift_pad.png",
+            height: 220,
+            scale: 1.05,
+          ),
+        ),
+
+        /// Phone (primary focus)
+        Positioned(
+          bottom: 10,
+          child: _deviceImage(
+            image: "assets/images/swift_phone.png",
+            height: 230,
+            scale: 1.1,
+            isPrimary: true,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
+
+// DOWNLOAD SECTION - TEXT
+
+Widget _downloadTextSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        "Shop Smarter with\nDJIBSOUQ Mobile App",
+        style: TextStyle(
+          fontSize: 40,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          height: 1.3,
+        ),
+      ),
+      const SizedBox(height: 20),
+      const Text(
+        "Browse thousands of products, track orders instantly\nand get exclusive mobile-only deals.",
+        style: TextStyle(
+          fontSize: 18,
+          color: Colors.white70,
+          height: 1.6,
+        ),
+      ),
+      const SizedBox(height: 30),
+
+      /// BULLET POINTS
+      _featureItem(Icons.flash_on, "Exclusive Flash Deals"),
+      _featureItem(Icons.notifications_active, "Real-time Order Tracking"),
+      _featureItem(Icons.security, "Secure & Fast Checkout"),
+
+      const SizedBox(height: 40),
+
+      /// PLAY STORE BUTTON
+      ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.greenAccent.shade400,
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        onPressed: () {
+          // 🔥 Remplace le lien par le vrai lien Play Store
+          launchUrl(
+            Uri.parse("https://play.google.com/store/apps/details?id=com.djibsouq.app"),
+            mode: LaunchMode.externalApplication,
+          );
+        },
+        icon: const Icon(Icons.android, color: Colors.black),
+        label: const Text(
+          "Download on Play Store",
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+// NEWSLETTER SIGNUP
+
+
+Widget _buildNewsletterModern2() {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 20),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          Color(0xFF2A2D43),
+          Color(0xFF1E3A8A),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    ),
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1000),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isSmall = constraints.maxWidth < 700;
+            return Container(
+              padding: const EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: isSmall
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _newsletterBox(),
+                        const SizedBox(height: 30),
+                        _socialRow(),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(flex: 3, child: _newsletterBox()),
+                        const SizedBox(width: 40),
+                        Expanded(flex: 2, child: _socialRow()),
+                      ],
+                    ),
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}
+
+// ===== Newsletter box =====
+Widget _newsletterBox() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        "Never Miss a Deal!",
+        style: TextStyle(
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+      const SizedBox(height: 12),
+      const Text(
+        "Subscribe to get exclusive offers, new arrivals, and updates straight to your inbox.",
+        style: TextStyle(fontSize: 16, color: Colors.white70, height: 1.5),
+      ),
+      const SizedBox(height: 24),
+      Row(
+        children: [
+          Expanded(
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Your email",
+                hintStyle: TextStyle(color: Colors.white54),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              ),
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: 12),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              backgroundColor: Colors.greenAccent.shade400,
+              elevation: 6,
+            ),
+            child: const Text(
+              "Subscribe",
+              style: TextStyle(
+                  color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+// ===== Social row moderne =====
+Widget _socialRow() {
+  final socials = [
+    {"icon": Icons.facebook, "color": Colors.blue},
+    {"icon": Icons.camera_alt, "color": Colors.purple},
+    {"icon": Icons.chat, "color": Colors.lightBlue},
+    {"icon": Icons.video_call, "color": Colors.red},
+  ];
+
+  return Wrap(
+    spacing: 16,
+    runSpacing: 16,
+    alignment: WrapAlignment.center,
+    children: socials
+        .map((s) => _socialChip(s["icon"] as IconData, s["color"] as Color))
+        .toList(),
+  );
+}
+
+// ===== Social chip moderne =====
+Widget _socialChip(IconData icon, Color color) {
+  return MouseRegion(
+    cursor: SystemMouseCursors.click,
+    child: GestureDetector(
+      onTap: () {},
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.9),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.6),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: Colors.white, size: 24),
+      ),
+    ),
+  );
+}
+
+
+
+Widget _buildFooterAmazonStyle() {
+  return Container(
+    width: double.infinity,
+    color: const Color(0xFF0F172A), // fond sombre
+    padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 40),
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1400),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isSmall = constraints.maxWidth < 900;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ===== Footer Top - 4 Columns =====
+                isSmall
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _footerColumnLogo(),
+                          const SizedBox(height: 30),
+                          _footerColumnLinks(),
+                          const SizedBox(height: 30),
+                          _footerColumnCustomer(),
+                          const SizedBox(height: 30),
+                          _footerColumnSocials(),
+                        ],
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 2, child: _footerColumnLogo()),
+                          Expanded(flex: 2, child: _footerColumnLinks()),
+                          Expanded(flex: 2, child: _footerColumnCustomer()),
+                          Expanded(flex: 1, child: _footerColumnSocials()),
+                        ],
+                      ),
+                const SizedBox(height: 50),
+                Divider(color: Colors.white.withOpacity(0.2)),
+                const SizedBox(height: 20),
+                // ===== Footer Bottom =====
+                Center(
+                  child: Text(
+                    "© 2026 DJIBSOUQ. All rights reserved.",
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}
+
+// ===== Column 1 : Logo + slogan =====
+Widget _footerColumnLogo() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Logo
+      Row(
+        children: [
+          Image.asset(
+            "assets/images/logo.png",
+            height: 40,
+          ),
+          const SizedBox(width: 10),
+          const Text(
+            "DJIBSOUQ",
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 22),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      const Text(
+        "Your Online Command Hub in Djibouti",
+        style: TextStyle(color: Colors.white70, fontSize: 14),
+      ),
+      const SizedBox(height: 20),
+      const Text(
+        "Fast Delivery | Secure Payment | 24/7 Support",
+        style: TextStyle(color: Colors.white70, fontSize: 13),
+      ),
+    ],
+  );
+}
+
+// ===== Column 2 : Liens rapides =====
+Widget _footerColumnLinks() {
+  final links = ["Home", "Categories", "Best Sellers", "Featured Products", "Contact"];
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        "Quick Links",
+        style: TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+      const SizedBox(height: 12),
+      ...links.map(
+        (link) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: TextButton(
+            onPressed: () {},
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              alignment: Alignment.centerLeft,
+              foregroundColor: Colors.white70,
+              textStyle: const TextStyle(fontSize: 14),
+            ),
+            child: Text(link),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+// ===== Column 3 : Customer Service =====
+Widget _footerColumnCustomer() {
+  final services = [
+    "Help Center",
+    "Returns",
+    "Shipping Info",
+    "Track Orders",
+    "Gift Cards"
+  ];
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        "Customer Service",
+        style: TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+      const SizedBox(height: 12),
+      ...services.map(
+        (s) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: TextButton(
+            onPressed: () {},
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              alignment: Alignment.centerLeft,
+              foregroundColor: Colors.white70,
+              textStyle: const TextStyle(fontSize: 14),
+            ),
+            child: Text(s),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+// ===== Column 4 : Socials =====
+Widget _footerColumnSocials() {
+  final socials = [
+    {"icon": Icons.facebook, "color": Colors.blue},
+    {"icon": Icons.camera_alt, "color": Colors.purple},
+    {"icon": Icons.chat, "color": Colors.lightBlue},
+    {"icon": Icons.video_call, "color": Colors.red},
+  ];
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        "Follow Us",
+        style: TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 12,
+        children: socials
+            .map((s) => _footerSocialChip(
+                s["icon"] as IconData, s["color"] as Color))
+            .toList(),
+      ),
+    ],
+  );
+}
+
+// ===== Social Chip avec hover =====
+Widget _footerSocialChip(IconData icon, Color color) {
+  return MouseRegion(
+    cursor: SystemMouseCursors.click,
+    child: GestureDetector(
+      onTap: () {},
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.9),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.5),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: Colors.white, size: 20),
+      ),
+    ),
+  );
 }
