@@ -266,6 +266,7 @@ Widget _buildCategoriesBar() {
   // ================= App download =================
  Widget _buildDownloadSection() {
   return Container(
+    key: const ValueKey('appdownload-section'),
     padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 60),
     decoration: const BoxDecoration(
       gradient: LinearGradient(
@@ -306,22 +307,61 @@ Widget _buildCategoriesBar() {
 
 
   // ================= WHY SHOP =================
-  Widget _buildWhyShop() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 60),
-      color: Colors.white,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: const [
-          _WhyItem(Icons.local_shipping, "Free Delivery"),
-          _WhyItem(Icons.lock, "Secure Payment"),
-          _WhyItem(Icons.verified, "Quality Products"),
-          _WhyItem(Icons.support_agent, "24/7 Support"),
-        ],
-      ),
-    );
-  }
+ Widget _buildWhyShop() {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 40),
+    color: Colors.white,
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1200),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isSmall = constraints.maxWidth < 900;
 
+            final items = [
+              _WhyModernItem(
+                icon: Icons.local_shipping,
+                title: "Free Delivery",
+                subtitle: "Fast shipping across Djibouti",
+              ),
+              _WhyModernItem(
+                icon: Icons.lock,
+                title: "Secure Payment",
+                subtitle: "Encrypted & safe checkout",
+              ),
+              _WhyModernItem(
+                icon: Icons.verified,
+                title: "Quality Products",
+                subtitle: "Verified sellers & brands",
+              ),
+              _WhyModernItem(
+                icon: Icons.support_agent,
+                title: "24/7 Support",
+                subtitle: "We’re here anytime",
+              ),
+            ];
+
+            return isSmall
+                ? Column(
+                    children: items
+                        .map((e) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: e,
+                            ))
+                        .toList(),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: items
+                        .map((e) => Expanded(child: e))
+                        .toList(),
+                  );
+          },
+        ),
+      ),
+    ),
+  );
+}
   // ================= FOOTER =================
   Widget _buildFooter() {
     return Container(
@@ -507,6 +547,39 @@ class _HeroGalaxyState extends State<HeroGalaxy>
                                 opacity: 1.0,
                                 height: 400,
                                 isPrimary: true,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            right: 150,
+                            bottom: 6,
+                            child: Builder(
+                              builder: (context) => ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.greenAccent.withOpacity(0.8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  final keyContext = _findKeyContext(context, const ValueKey('appdownload-section'));
+                                  if (keyContext != null) {
+                                    Scrollable.ensureVisible(
+                                      keyContext,
+                                      duration: const Duration(milliseconds: 600),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  }
+                                },
+                                icon: const Icon(Icons.download, color: Colors.black),
+                                label: const Text(
+                                  "Télécharger l'app",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -1051,9 +1124,67 @@ Widget _downloadTextSection() {
   );
 }
 
+class _WhyModernItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _WhyModernItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: primaryBlue.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: primaryBlue, size: 26),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: textDark,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+
+
+
 // NEWSLETTER SIGNUP
-
-
 Widget _buildNewsletterModern2() {
   return Container(
     width: double.infinity,
@@ -1435,4 +1566,17 @@ Widget _footerSocialChip(IconData icon, Color color) {
       ),
     ),
   );
+}
+
+BuildContext? _findKeyContext(BuildContext context, Key key) {
+  BuildContext? result;
+  void search(Element element) {
+    if (element.widget.key == key) {
+      result = element;
+    } else {
+      element.visitChildren(search);
+    }
+  }
+  context.findRootAncestorStateOfType<State>()?.context.visitChildElements(search);
+  return result;
 }

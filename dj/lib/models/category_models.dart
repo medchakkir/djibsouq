@@ -7,6 +7,8 @@ class Category {
   final String icon;
   final Color color;
 
+  var description;
+
   Category({
     required this.id,
     required this.name,

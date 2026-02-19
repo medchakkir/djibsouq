@@ -181,5 +181,11 @@ class ProductRepository {
   return products.where((p) => p.isBestSeller == true).toList();
 }
 
+static int getProductCountByCategory(String categoryName) {
+  return products
+      .where((p) => p.category == categoryName)
+      .length;
+}
+
 
 }
