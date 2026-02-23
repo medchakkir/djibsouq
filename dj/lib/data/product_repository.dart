@@ -6,37 +6,37 @@ import 'package:dj/models/category_models.dart';
 class ProductRepository {
   static List<Category> categories = [
     Category(
-    id: 0,
-    name: "New Arrivals",
-    image: "https://via.placeholder.com/400x300/3B82F6/FFFFFF?text=New+Arrivals",
-    icon: "stars", // icône spécifique
-    color: const Color(0xFF3B82F6),
-  ),
+      id: 0,
+      name: "New Arrivals",
+      image: "assets/images/new_arrival.png",
+      icon: "stars", // icône spécifique
+      color: const Color(0xFF3B82F6),
+    ),
     Category(
       id: 1,
       name: "Électronique",
-      image: "https://via.placeholder.com/400x300/3B82F6/FFFFFF?text=Electronique",
+      image: "assets/images/electronic.png",
       icon: "devices",
       color: const Color(0xFF3B82F6),
     ),
     Category(
       id: 2,
       name: "Vêtements",
-      image: "https://via.placeholder.com/400x300/EC4899/FFFFFF?text=Vetements",
+      image: "assets/images/vetement.png",
       icon: "shopping_bag",
       color: const Color(0xFFEC4899),
     ),
     Category(
       id: 3,
       name: "Maison",
-      image: "https://via.placeholder.com/400x300/10B981/FFFFFF?text=Maison",
+      image: "assets/images/canape.jpg",
       icon: "home",
       color: const Color(0xFF10B981),
     ),
     Category(
       id: 4,
       name: "Sports",
-      image: "https://via.placeholder.com/400x300/F59E0B/FFFFFF?text=Sports",
+      image: "assets/images/ballon.jpg",
       icon: "sports_soccer",
       color: const Color(0xFFF59E0B),
     ),

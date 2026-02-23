@@ -1,3 +1,4 @@
+import 'package:dj/layouts/web/pages_web/products_web.dart';
 import 'package:dj/widgets/web_header.dart';
 import 'package:flutter/material.dart';
 
@@ -78,7 +79,12 @@ class _FavoritesWebState extends State<FavoritesWeb> {
                 vertical: 15,
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const ProductsWeb()),
+              );
+            },
             child: const Text(
               "Explorez les produits",
               style: TextStyle(

@@ -44,7 +44,7 @@ class CategoriesWeb extends StatelessWidget {
             child: SingleChildScrollView(
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -247,9 +247,21 @@ class CategoriesWeb extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 // IMAGE
-                Image.network(imageUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) {
-                  return Container(color: primaryBlue.withOpacity(0.1));
-                }),
+                imageUrl.startsWith('assets/')
+                    ? Image.asset(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) {
+                          return Container(color: primaryBlue.withOpacity(0.1));
+                        },
+                      )
+                    : Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) {
+                          return Container(color: primaryBlue.withOpacity(0.1));
+                        },
+                      ),
 
                 // OVERLAY DÉGRADÉ
                 Container(
@@ -306,80 +318,201 @@ class CategoriesWeb extends StatelessWidget {
   Widget _buildFooterAmazonStyle() {
     return Container(
       width: double.infinity,
-      color: const Color(0xFF0F172A),
-      padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text("DJIBSOUQ",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22)),
-                    SizedBox(height: 10),
-                    Text(
-                        "Marketplace moderne pour découvrir les meilleurs produits.",
-                        style: TextStyle(color: Colors.white70, fontSize: 14)),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Quick Links",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16)),
-                    const SizedBox(height: 12),
-                    ...["Home", "Categories", "Best Sellers", "Featured", "Contact"]
-                        .map(
-                      (link) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Text(link,
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 14)),
+      color: const Color(0xFF0F172A), // fond sombre
+      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 40),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1400),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isSmall = constraints.maxWidth < 900;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ===== Footer Top - 4 Columns =====
+                  isSmall
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _footerColumnLogo(),
+                            const SizedBox(height: 30),
+                            _footerColumnLinks(),
+                            const SizedBox(height: 30),
+                            _footerColumnCustomer(),
+                            const SizedBox(height: 30),
+                            _footerColumnSocials(),
+                          ],
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 2, child: _footerColumnLogo()),
+                            Expanded(flex: 2, child: _footerColumnLinks()),
+                            Expanded(flex: 2, child: _footerColumnCustomer()),
+                            Expanded(flex: 1, child: _footerColumnSocials()),
+                          ],
+                        ),
+                  const SizedBox(height: 50),
+                  Divider(color: Colors.white.withOpacity(0.2)),
+                  const SizedBox(height: 20),
+                  // ===== Footer Bottom =====
+                  Center(
+                    child: Text(
+                      "© 2026 DJIBSOUQ. All rights reserved.",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 14,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 1,
-                child: Row(
-                  children: [
-                    ...[Icons.facebook, Icons.camera_alt, Icons.chat, Icons.video_call]
-                        .map(
-                      (icon) => Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: CircleAvatar(
-                            radius: 16,
-                            backgroundColor: Colors.white24,
-                            child: Icon(icon, color: Colors.white, size: 18)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 30),
-          const Divider(color: Colors.white24),
-          const SizedBox(height: 15),
-          const Center(
-              child: Text("© 2026 DJIBSOUQ. Tous droits réservés.",
-                  style: TextStyle(color: Colors.white60, fontSize: 13))),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _footerColumnLogo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Image.asset(
+              "assets/images/logo.png",
+              height: 40,
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              "DJIBSOUQ",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          "Your Online Command Hub in Djibouti",
+          style: TextStyle(color: Colors.white70, fontSize: 14),
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          "Fast Delivery | Secure Payment | 24/7 Support",
+          style: TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+      ],
+    );
+  }
+
+  Widget _footerColumnLinks() {
+    final links = ["Home", "Categories", "Best Sellers", "Featured Products", "Contact"];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Quick Links",
+          style: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+        ...links.map(
+          (link) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: TextButton(
+              onPressed: () {},
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                alignment: Alignment.centerLeft,
+                foregroundColor: Colors.white70,
+                textStyle: const TextStyle(fontSize: 14),
+              ),
+              child: Text(link),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _footerColumnCustomer() {
+    final services = [
+      "Help Center",
+      "Returns",
+      "Shipping Info",
+      "Track Orders",
+      "Gift Cards"
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Customer Service",
+          style: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+        ...services.map(
+          (s) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: TextButton(
+              onPressed: () {},
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                alignment: Alignment.centerLeft,
+                foregroundColor: Colors.white70,
+                textStyle: const TextStyle(fontSize: 14),
+              ),
+              child: Text(s),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _footerColumnSocials() {
+    final socials = [
+      {"icon": Icons.facebook, "color": Colors.blue},
+      {"icon": Icons.camera_alt, "color": Colors.purple},
+      {"icon": Icons.chat, "color": Colors.lightBlue},
+      {"icon": Icons.video_call, "color": Colors.red},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Follow Us",
+          style: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          children: socials
+              .map((s) => _footerSocialChip(
+                  s["icon"] as IconData, s["color"] as Color))
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _footerSocialChip(IconData icon, Color color) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () {},
+        child: CircleAvatar(
+          radius: 16,
+          backgroundColor: color.withOpacity(0.2),
+          child: Icon(icon, color: color, size: 18),
+        ),
       ),
     );
   }

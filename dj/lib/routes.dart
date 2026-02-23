@@ -1,7 +1,7 @@
+import 'package:dj/layouts/web/pages_web/products_web.dart' show ProductsWeb;
 import 'package:flutter/material.dart';
 import 'package:dj/layouts/web/home_web.dart';
 import 'package:dj/layouts/web/pages_web/categories_web.dart';
-import 'package:dj/layouts/web/pages_web/products_web.dart';
 import 'package:dj/layouts/web/pages_web/cart_web.dart';
 import 'package:dj/layouts/web/pages_web/favorites_web.dart';
 import 'package:dj/layouts/web/pages_web/profile_web.dart';

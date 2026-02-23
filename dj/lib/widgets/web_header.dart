@@ -89,14 +89,14 @@ class _buildHeaderState extends State<buildHeader> {
                                   const CategoriesWeb()),
                         );
                         break;
-                      case "Deals":
+                      case "Products":
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => const ProductsWeb()),
                         );
                         break;
-                      case "About":
+                      case "Promo":
                         // Ajouter page About
                         break;
                       case "Contact":
