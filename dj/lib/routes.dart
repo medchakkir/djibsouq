@@ -5,6 +5,7 @@ import 'package:dj/layouts/web/pages_web/categories_web.dart';
 import 'package:dj/layouts/web/pages_web/cart_web.dart';
 import 'package:dj/layouts/web/pages_web/favorites_web.dart';
 import 'package:dj/layouts/web/pages_web/profile_web.dart';
+import 'package:dj/layouts/web/pages_web/promo_web.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -13,6 +14,7 @@ class AppRoutes {
   static const String cart = '/cart';
   static const String favorites = '/favorites';
   static const String profile = '/profile';
+  static const String promo = '/promo';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -21,7 +23,10 @@ class AppRoutes {
       case categories:
         return MaterialPageRoute(builder: (_) => const CategoriesWeb());
       case products:
-        return MaterialPageRoute(builder: (_) => const ProductsWeb());
+        final args = settings.arguments as String?;
+        return MaterialPageRoute(builder: (_) => ProductsWeb(initialCategory: args));
+      case promo:
+        return MaterialPageRoute(builder: (_) => const PromoWeb());
       case cart:
         return MaterialPageRoute(builder: (_) => const CartWeb());
       case favorites:

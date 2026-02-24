@@ -1,3 +1,4 @@
+import 'package:dj/layouts/web/pages_web/promo_web.dart';
 import 'package:flutter/material.dart';
 import 'package:dj/layouts/web/home_web.dart';
 import 'package:dj/layouts/web/pages_web/cart_web.dart';
@@ -30,7 +31,7 @@ class _buildHeaderState extends State<buildHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final navItems = ["Home", "Categories", "Products", "Promo"];
+    final navItems = ["Home", "Categories", "Products", "Promo",];
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
@@ -97,7 +98,11 @@ class _buildHeaderState extends State<buildHeader> {
                         );
                         break;
                       case "Promo":
-                        // Ajouter page About
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const PromoWeb()),
+                        );
                         break;
                       case "Contact":
                         // Ajouter page Contact

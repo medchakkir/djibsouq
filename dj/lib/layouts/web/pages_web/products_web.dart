@@ -9,7 +9,9 @@ const Color cardGrey = Color(0xFFFFFFFF);
 const Color textDark = Color(0xFF111827);
 
 class ProductsWeb extends StatefulWidget {
-  const ProductsWeb({super.key});
+  final String? initialCategory;
+  
+  const ProductsWeb({super.key, this.initialCategory});
 
   @override
   State<ProductsWeb> createState() => _ProductsWebState();
@@ -25,6 +27,12 @@ class _ProductsWebState extends State<ProductsWeb> {
     super.initState();
     for (var product in ProductRepository.products) {
       _sectionKeys.putIfAbsent(product.category, () => GlobalKey());
+    }
+    
+    if (widget.initialCategory != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToCategory(widget.initialCategory!);
+      });
     }
   }
 

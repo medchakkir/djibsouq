@@ -113,6 +113,142 @@ Widget _buildBestSellers() {
 }
 
 
+  // ================= PROMO CAROUSEL =================
+  Widget _buildPromoCarousel() {
+    final promoCategories = ProductRepository.categories.where((cat) => cat.name != "New Arrivals").toList();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 60),
+      color: lightGrey,
+      child: Column(
+        children: [
+          const Text(
+            "🎉 Promotions Spéciales",
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: textDark,
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            "Découvrez nos offres exceptionnelles par catégorie",
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 40),
+          SizedBox(
+            height: 200,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: promoCategories.length,
+              itemBuilder: (context, index) {
+                final category = promoCategories[index];
+                return Container(
+                  width: 280,
+                  margin: const EdgeInsets.symmetric(horizontal: 15),
+                  child: _buildPromoCard(
+                    title: category.name,
+                    description: "Jusqu'à -50% sur nos ${category.name.toLowerCase()}",
+                    emoji: _getCategoryEmoji(category.icon),
+                    color: category.color,
+                    categoryName: category.name,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getCategoryEmoji(String iconName) {
+    switch (iconName) {
+      case 'devices':
+        return '📱';
+      case 'shopping_bag':
+        return '👕';
+      case 'home':
+        return '🏠';
+      case 'sports_soccer':
+        return '⚽';
+      default:
+        return '🛍️';
+    }
+  }
+
+  Widget _buildPromoCard({
+    required String title,
+    required String description,
+    required String emoji,
+    required Color color,
+    required String categoryName,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/products', arguments: categoryName);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
+          ],
+          color: Colors.white,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Center(
+                  child: Text(
+                    emoji,
+                    style: const TextStyle(fontSize: 30),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                description,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,6 +259,7 @@ Widget _buildBestSellers() {
             buildHeader(currentPage: "Home"),
             _buildHeroSection(),
             _buildBestSellers(),
+            _buildPromoCarousel(),
             _buildCategoriesBar(),
             _buildFeaturedProducts(),
             _buildDownloadSection(),

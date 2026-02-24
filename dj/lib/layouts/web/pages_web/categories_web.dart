@@ -99,7 +99,9 @@ class CategoriesWeb extends StatelessWidget {
                               icon: _getIcon(category.icon),
                               imageUrl: category.image,
                               description: category.description ?? "",
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.pushNamed(context, '/products', arguments: category.name);
+                              },
                             );
                           },
                         );
@@ -189,7 +191,9 @@ class CategoriesWeb extends StatelessWidget {
 
                     // CTA
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/products');
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryBlue,
                         padding: const EdgeInsets.symmetric(
