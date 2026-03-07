@@ -499,19 +499,6 @@ Widget _buildCategoriesBar() {
     ),
   );
 }
-  // ================= FOOTER =================
-  Widget _buildFooter() {
-    return Container(
-      padding: const EdgeInsets.all(40),
-      color: primaryBlue,
-      child: const Center(
-        child: Text(
-          "© 2026 MIZUX. All rights reserved.",
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-    );
-  }
 }
 
 // WHY ITEM

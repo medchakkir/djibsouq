@@ -1,3 +1,4 @@
+import 'package:dj/layouts/web/pages_web/detail_product_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:dj/data/product_repository.dart';
 import 'package:dj/models/product_models.dart';
@@ -6,12 +7,29 @@ import '../categories_web.dart';
 import '../cart_web.dart';
 import '../favorites_web.dart';
 import '../profile_web.dart';
-import '../detail_product_web.dart';
+
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
 const Color cardGrey = Color(0xFFFFFFFF);
 const Color textDark = Color(0xFF111827);
+
+// helper to display detail popup
+void openProductPopup(BuildContext context, Product product) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (context) {
+      return Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 120, vertical: 80),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: DetailProductPopup(product: product),
+      );
+    },
+  );
+}
 
 class SportsCategoryWeb extends StatefulWidget {
   const SportsCategoryWeb({super.key});
@@ -227,13 +245,7 @@ class _SportsCategoryWebState extends State<SportsCategoryWeb> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    DetailProductWeb(product: product),
-              ),
-            );
+            openProductPopup(context, product);
           },
           borderRadius: BorderRadius.circular(15),
           child: Column(
@@ -305,7 +317,9 @@ class _SportsCategoryWebState extends State<SportsCategoryWeb> {
                           backgroundColor: primaryBlue,
                           padding: const EdgeInsets.symmetric(vertical: 8),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                      openProductPopup(context, product);
+                    },
                         child: const Text(
                           "Ajouter",
                           style: TextStyle(

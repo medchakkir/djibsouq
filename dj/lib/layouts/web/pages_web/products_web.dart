@@ -2,11 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:dj/data/product_repository.dart';
 import 'package:dj/models/product_models.dart';
 import 'package:dj/widgets/web_header.dart';
+import 'package:dj/layouts/web/pages_web/detail_product_popup.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
 const Color cardGrey = Color(0xFFFFFFFF);
 const Color textDark = Color(0xFF111827);
+
+/// Opens a dialog showing detailed information about [product].
+void openProductPopup(BuildContext context, Product product) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (context) {
+      return Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 120, vertical: 80),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: DetailProductPopup(product: product),
+      );
+    },
+  );
+}
 
 class ProductsWeb extends StatefulWidget {
   final String? initialCategory;
@@ -255,10 +273,14 @@ class _ProductCardState extends State<_ProductCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        transform: Matrix4.identity()..scale(_isHovered ? 1.05 : 1.0),
-        child: Container(
+      child: GestureDetector(
+        onTap: () {
+          openProductPopup(context, widget.product);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          transform: Matrix4.identity()..scale(_isHovered ? 1.05 : 1.0),
+          child: Container(
           decoration: BoxDecoration(
             color: cardGrey,
             borderRadius: BorderRadius.circular(15),
@@ -312,7 +334,9 @@ class _ProductCardState extends State<_ProductCard> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryBlue,
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          openProductPopup(context, widget.product);
+                        },
                         child: const Text("Ajouter"),
                       ),
                     )
@@ -323,7 +347,8 @@ class _ProductCardState extends State<_ProductCard> {
           ),
         ),
       ),
-    );
+    )
+     );
   }
 }
 
