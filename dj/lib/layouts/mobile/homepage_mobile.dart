@@ -81,7 +81,7 @@ class _HomepageMobileState extends State<HomepageMobile> {
                           const SizedBox(height: 32),
                         ],
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),

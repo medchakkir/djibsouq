@@ -161,7 +161,7 @@ class _ProductsWebState extends State<ProductsWeb> {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

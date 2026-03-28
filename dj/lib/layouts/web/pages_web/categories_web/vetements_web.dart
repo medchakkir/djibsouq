@@ -31,6 +31,8 @@ void openProductPopup(BuildContext context, Product product) {
 }
 
 class VetementsCategoryWeb extends StatefulWidget {
+  const VetementsCategoryWeb({super.key});
+
 
   @override
   State<VetementsCategoryWeb> createState() => _VetementsCategoryWebState();

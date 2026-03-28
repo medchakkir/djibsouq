@@ -7,14 +7,22 @@ const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
 
 class PromoWeb extends StatefulWidget {
-  const PromoWeb({super.key});
+  final String? initialCategory;
+
+  const PromoWeb({super.key, this.initialCategory});
 
   @override
   State<PromoWeb> createState() => _PromoWebState();
 }
 
 class _PromoWebState extends State<PromoWeb> {
-  String selectedCategory = "Toutes";
+  late String selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedCategory = widget.initialCategory ?? "Toutes";
+  }
 
   @override
   Widget build(BuildContext context) {

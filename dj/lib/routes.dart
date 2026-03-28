@@ -26,7 +26,8 @@ class AppRoutes {
         final args = settings.arguments as String?;
         return MaterialPageRoute(builder: (_) => ProductsWeb(initialCategory: args));
       case promo:
-        return MaterialPageRoute(builder: (_) => const PromoWeb());
+        final args = settings.arguments as String?;
+        return MaterialPageRoute(builder: (_) => PromoWeb(initialCategory: args));
       case cart:
         return MaterialPageRoute(builder: (_) => const CartWeb());
       case favorites:

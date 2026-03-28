@@ -5,10 +5,10 @@ class HoverContainer extends StatefulWidget {
   final double translateY;
 
   const HoverContainer({
-    Key? key,
+    super.key,
     required this.child,
     this.translateY = -5,
-  }) : super(key: key);
+  });
 
   @override
   State<HoverContainer> createState() => _HoverContainerState();

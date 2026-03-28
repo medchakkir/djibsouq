@@ -207,7 +207,7 @@ class ProfileWeb extends StatelessWidget {
                       const Divider(height: 1),
                     ],
                   ))
-              .toList(),
+              ,
         ],
       ),
     );

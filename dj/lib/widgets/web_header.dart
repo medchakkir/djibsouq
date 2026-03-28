@@ -31,7 +31,7 @@ class _buildHeaderState extends State<buildHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final navItems = ["Home", "Categories", "Products", "Promo",];
+    final navItems = ["Home", "Categories", "Products", "Promo", ];
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
@@ -104,6 +104,7 @@ class _buildHeaderState extends State<buildHeader> {
                               builder: (context) => const PromoWeb()),
                         );
                         break;
+                      
                       case "Contact":
                         // Ajouter page Contact
                         break;
