@@ -10,9 +10,51 @@ import 'package:dj/layouts/web/pages_web/profile_web.dart';
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color textDark = Color(0xFF111827);
 
-// ================= HEADER =================
+// ─────────────────────────────────────────────
+//  TRANSITION PERSONNALISÉE : Fade + Slide G→D
+// ─────────────────────────────────────────────
+class FadeSlideRoute extends PageRouteBuilder {
+  final Widget page;
+
+  FadeSlideRoute({required this.page})
+      : super(
+          transitionDuration: const Duration(milliseconds: 400),
+          reverseTransitionDuration: const Duration(milliseconds: 300),
+          pageBuilder: (_, __, ___) => page,
+          transitionsBuilder: (_, animation, __, child) {
+            // Slide léger : vient de la gauche (-6% de la largeur)
+            final slide = Tween<Offset>(
+              begin: const Offset(-0.06, 0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+
+            // Fade : 0 → 1
+            final fade = CurvedAnimation(parent: animation, curve: Curves.easeIn);
+
+            return FadeTransition(
+              opacity: fade,
+              child: SlideTransition(position: slide, child: child),
+            );
+          },
+        );
+}
+
+// ─────────────────────────────────────────────
+//  HELPER : navigate avec FadeSlideRoute
+// ─────────────────────────────────────────────
+void navigateTo(BuildContext context, Widget page, {bool replace = false}) {
+  if (replace) {
+    Navigator.pushReplacement(context, FadeSlideRoute(page: page));
+  } else {
+    Navigator.push(context, FadeSlideRoute(page: page));
+  }
+}
+
+// ─────────────────────────────────────────────
+//  HEADER
+// ─────────────────────────────────────────────
 class buildHeader extends StatefulWidget {
-  final String currentPage; // Page active à afficher
+  final String currentPage;
 
   const buildHeader({super.key, required this.currentPage});
 
@@ -29,125 +71,111 @@ class _buildHeaderState extends State<buildHeader> {
     selectedItem = widget.currentPage;
   }
 
+  void _navigate(String title) {
+    setState(() => selectedItem = title);
+    switch (title) {
+      case 'Home':
+        navigateTo(context, const HomepageWeb(), replace: true);
+        break;
+      case 'Categories':
+        navigateTo(context, const CategoriesWeb());
+        break;
+      case 'Products':
+        navigateTo(context, const ProductsWeb());
+        break;
+      case 'Promo':
+        navigateTo(context, const PromoWeb());
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final navItems = ["Home", "Categories", "Products", "Promo", ];
+    final navItems = ['Home', 'Categories', 'Products', 'Promo'];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
-      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // LOGO
-          GestureDetector(
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomepageWeb()),
-              );
-            },
-            child: Row(
-              children: [
-                Image.asset("assets/images/logo.png", width: 40),
-                const SizedBox(width: 8),
-                const Text(
-                  "DJIBSOUQ",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: primaryBlue),
-                ),
-              ],
+          // ── LOGO ──
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => navigateTo(context, const HomepageWeb(), replace: true),
+              child: Row(
+                children: [
+                  Image.asset('assets/images/logo.png', width: 40),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'DJIBSOUQ',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryBlue),
+                  ),
+                ],
+              ),
             ),
           ),
-          // NAVIGATION
+
+          // ── NAV ──
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: navItems.map((title) {
-                return NavItemWeb(
-                  title: title,
-                  isSelected: selectedItem == title,
-                  onTap: () {
-                    setState(() {
-                      selectedItem = title;
-                    });
-                    // Navigation selon l'onglet
-                    switch (title) {
-                      case "Home":
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const HomepageWeb()),
-                        );
-                        break;
-                      case "Categories":
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const CategoriesWeb()),
-                        );
-                        break;
-                      case "Products":
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ProductsWeb()),
-                        );
-                        break;
-                      case "Promo":
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const PromoWeb()),
-                        );
-                        break;
-                      
-                      case "Contact":
-                        // Ajouter page Contact
-                        break;
-                    }
-                  },
-                );
-              }).toList(),
+              children: navItems
+                  .map((title) => NavItemWeb(
+                        title: title,
+                        isSelected: selectedItem == title,
+                        onTap: () => _navigate(title),
+                      ))
+                  .toList(),
             ),
           ),
+
           const SizedBox(width: 30),
-          // ICONS
+
+          // ── ICONS ──
           Row(
             children: [
-              GestureDetector(onTap: () {}, child: const Icon(Icons.search)),
-              const SizedBox(width: 15),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ProfileWeb()),
-                  );
-                },
-                child: const Icon(Icons.person_outline),
+              _HeaderIcon(
+                icon: Icons.search,
+                activeIcon: Icons.search,
+                isActive: false,
+                tooltip: 'Rechercher',
+                onTap: () {},
               ),
-              const SizedBox(width: 15),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const FavoritesWeb()),
-                  );
-                },
-                child: const Icon(Icons.favorite_border),
+              const SizedBox(width: 6),
+              _HeaderIcon(
+                icon: Icons.person_outline,
+                activeIcon: Icons.person,
+                isActive: selectedItem == 'Profil',
+                tooltip: 'Profil',
+                onTap: () => navigateTo(context, const ProfileWeb()),
               ),
-              const SizedBox(width: 15),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CartWeb()),
-                  );
-                },
-                child: const Icon(Icons.shopping_cart_outlined),
+              const SizedBox(width: 6),
+              _HeaderIcon(
+                icon: Icons.favorite_border,
+                activeIcon: Icons.favorite,
+                isActive: selectedItem == 'Favoris',
+                tooltip: 'Favoris',
+                onTap: () => navigateTo(context, const FavoritesWeb()),
+              ),
+              const SizedBox(width: 6),
+              _HeaderIcon(
+                icon: Icons.shopping_cart_outlined,
+                activeIcon: Icons.shopping_cart,
+                isActive: selectedItem == 'Panier',
+                tooltip: 'Panier',
+                badge: 3,
+                onTap: () => navigateTo(context, const CartWeb()),
               ),
             ],
           ),
@@ -157,7 +185,123 @@ class _buildHeaderState extends State<buildHeader> {
   }
 }
 
-// ================= NAV ITEM ANIMÉ =================
+// ─────────────────────────────────────────────
+//  HEADER ICON
+// ─────────────────────────────────────────────
+class _HeaderIcon extends StatefulWidget {
+  final IconData icon;
+  final IconData activeIcon;
+  final bool isActive;
+  final String tooltip;
+  final VoidCallback onTap;
+  final int? badge;
+
+  const _HeaderIcon({
+    required this.icon,
+    required this.activeIcon,
+    required this.isActive,
+    required this.tooltip,
+    required this.onTap,
+    this.badge,
+  });
+
+  @override
+  State<_HeaderIcon> createState() => _HeaderIconState();
+}
+
+class _HeaderIconState extends State<_HeaderIcon> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+  bool _hovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
+    _scale = Tween<double>(begin: 1.0, end: 1.25).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool showActive = widget.isActive || _hovered;
+
+    return Tooltip(
+      message: widget.tooltip,
+      preferBelow: true,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) {
+          setState(() => _hovered = true);
+          _controller.forward();
+        },
+        onExit: (_) {
+          setState(() => _hovered = false);
+          if (!widget.isActive) _controller.reverse();
+        },
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: ScaleTransition(
+            scale: _scale,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: showActive ? primaryBlue.withOpacity(0.08) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      showActive ? widget.activeIcon : widget.icon,
+                      key: ValueKey(showActive),
+                      size: widget.isActive ? 26 : 22,
+                      color: showActive ? primaryBlue : Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+                if (widget.badge != null && widget.badge! > 0)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      width: 17,
+                      height: 17,
+                      decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle),
+                      child: Center(
+                        child: Text(
+                          '${widget.badge}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+//  NAV ITEM
+// ─────────────────────────────────────────────
 class NavItemWeb extends StatefulWidget {
   final String title;
   final bool isSelected;
@@ -175,13 +319,13 @@ class NavItemWeb extends StatefulWidget {
 }
 
 class _NavItemWebState extends State<NavItemWeb> {
-  bool isHover = false;
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => setState(() => isHover = true),
-      onExit: (_) => setState(() => isHover = false),
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
@@ -194,7 +338,7 @@ class _NavItemWebState extends State<NavItemWeb> {
               bottom: BorderSide(
                 color: widget.isSelected
                     ? primaryBlue
-                    : isHover
+                    : _hovered
                         ? primaryBlue.withOpacity(0.6)
                         : Colors.transparent,
                 width: 3,
@@ -207,7 +351,7 @@ class _NavItemWebState extends State<NavItemWeb> {
               fontWeight: widget.isSelected ? FontWeight.bold : FontWeight.w500,
               color: widget.isSelected
                   ? primaryBlue
-                  : isHover
+                  : _hovered
                       ? primaryBlue.withOpacity(0.8)
                       : textDark,
               fontSize: 16,

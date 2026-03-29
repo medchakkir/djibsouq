@@ -145,8 +145,6 @@ class _ProductsWebState extends State<ProductsWeb> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildBanner(),
-        const SizedBox(height: 40),
 
         ...groupedProducts.entries.map((entry) {
           return Container(
@@ -166,40 +164,7 @@ class _ProductsWebState extends State<ProductsWeb> {
     );
   }
 
-  // ================= BANNER =================
-
-  Widget _buildBanner() {
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        gradient: LinearGradient(
-          colors: [
-            primaryBlue,
-            primaryBlue.withOpacity(0.8),
-          ],
-        ),
-      ),
-      padding: const EdgeInsets.all(30),
-      child: Row(
-        children: [
-          const Expanded(
-            child: Text(
-              "ÉCONOMISEZ 20%\nSUR NOS PRODUITS",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const Icon(Icons.shopping_bag,
-              size: 80, color: Colors.white),
-        ],
-      ),
-    );
-  }
-
+ 
   // ================= SECTION TITLE =================
 
   Widget _buildSectionTitle(String title) {

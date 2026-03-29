@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dj/data/product_repository.dart';
 import 'package:dj/widgets/web_header.dart';
+import 'package:dj/routes.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightBlueBg = Color(0xFFE8F1FF);
@@ -100,7 +101,7 @@ class CategoriesWeb extends StatelessWidget {
                               imageUrl: category.image,
                               description: category.description ?? "",
                               onTap: () {
-                                Navigator.pushNamed(context, '/products', arguments: category.name);
+                                Navigator.pushNamed(context, AppRoutes.products, arguments: category.name);
                               },
                             );
                           },
@@ -192,7 +193,7 @@ class CategoriesWeb extends StatelessWidget {
                     // CTA
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/products');
+                        Navigator.pushNamed(context, AppRoutes.products);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryBlue,
