@@ -6,6 +6,7 @@ import 'package:dj/layouts/web/pages_web/categories_web.dart';
 import 'package:dj/layouts/web/pages_web/favorites_web.dart';
 import 'package:dj/layouts/web/pages_web/products_web.dart';
 import 'package:dj/layouts/web/pages_web/profile_web.dart';
+import 'package:dj/services/responsive_service.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color textDark = Color(0xFF111827);
@@ -89,12 +90,37 @@ class _buildHeaderState extends State<buildHeader> {
     }
   }
 
+  void _showMobileMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: ['Home', 'Categories', 'Products', 'Promo']
+              .map((title) => ListTile(
+                    title: Text(title),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _navigate(title);
+                    },
+                  ))
+              .toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final navItems = ['Home', 'Categories', 'Products', 'Promo'];
+    final isMobile = ResponsiveService.isMobile(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : 60,
+        vertical: 18,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -126,21 +152,29 @@ class _buildHeaderState extends State<buildHeader> {
             ),
           ),
 
-          // ── NAV ──
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: navItems
-                  .map((title) => NavItemWeb(
-                        title: title,
-                        isSelected: selectedItem == title,
-                        onTap: () => _navigate(title),
-                      ))
-                  .toList(),
+          if (!isMobile) ...[
+            // ── NAV ──
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: navItems
+                    .map((title) => NavItemWeb(
+                          title: title,
+                          isSelected: selectedItem == title,
+                          onTap: () => _navigate(title),
+                        ))
+                    .toList(),
+              ),
             ),
-          ),
 
-          const SizedBox(width: 30),
+            const SizedBox(width: 30),
+          ] else ...[
+            // Mobile: Hamburger menu
+            IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () => _showMobileMenu(context),
+            ),
+          ],
 
           // ── ICONS ──
           Row(
