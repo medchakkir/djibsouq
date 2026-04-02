@@ -7,6 +7,7 @@ import 'package:dj/layouts/web/pages_web/favorites_web.dart';
 import 'package:dj/layouts/web/pages_web/products_web.dart';
 import 'package:dj/layouts/web/pages_web/profile_web.dart';
 import 'package:dj/services/responsive_service.dart';
+import 'package:dj/auth_page.dart';
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color textDark = Color(0xFF111827);
@@ -185,6 +186,14 @@ class _buildHeaderState extends State<buildHeader> {
                 isActive: false,
                 tooltip: 'Rechercher',
                 onTap: () {},
+              ),
+              const SizedBox(width: 6),
+              _HeaderIcon(
+                icon: Icons.login,
+                activeIcon: Icons.login,
+                isActive: false,
+                tooltip: 'Se connecter',
+                onTap: () => navigateTo(context, const AuthPage()),
               ),
               const SizedBox(width: 6),
               _HeaderIcon(

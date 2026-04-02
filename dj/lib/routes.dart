@@ -6,6 +6,7 @@ import 'package:dj/layouts/web/pages_web/cart_web.dart';
 import 'package:dj/layouts/web/pages_web/favorites_web.dart';
 import 'package:dj/layouts/web/pages_web/profile_web.dart';
 import 'package:dj/layouts/web/pages_web/promo_web.dart';
+import 'package:dj/auth_page.dart';
 
 // ─────────────────────────────────────────────
 //  TRANSITION : Fade + Slide Gauche → Droite
@@ -44,6 +45,7 @@ class AppRoutes {
   static const String favorites  = '/favorites';
   static const String profile    = '/profile';
   static const String promo      = '/promo';
+  static const String auth       = '/auth';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -89,6 +91,12 @@ class AppRoutes {
         return FadeSlideRoute(
           settings: settings,
           page: const ProfileWeb(),
+        );
+
+      case auth:
+        return FadeSlideRoute(
+          settings: settings,
+          page: const AuthPage(),
         );
 
       default:

@@ -1,14 +1,17 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:dj/layouts/web/pages_web/categories_web.dart';
-import 'package:dj/layouts/web/pages_web/detail_product_popup.dart';
 import 'package:dj/models/category_models.dart';
 import 'package:dj/models/product_models.dart';
 import 'package:dj/widgets/web_header.dart';
 import 'package:dj/data/product_repository.dart';
+import 'package:dj/widgets/hero_galaxy.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:dj/widgets/featured_product_card.dart';
+import 'package:dj/widgets/promo_card.dart';
+import 'package:dj/widgets/best_seller_card.dart';
 import 'package:dj/routes.dart';
+import 'package:dj/widgets/simple_widgets.dart';
 
 // ─────────────────────────────────────────────
 //  BREAKPOINTS
@@ -23,6 +26,7 @@ const Color textDark = Color(0xFF111827);
 
 const double mobileBreakpoint = 600.0;
 const double tabletBreakpoint = 900.0;
+const double largeBreakpoint = 1400.0;
 
 // ─────────────────────────────────────────────
 //  HOMEPAGE
@@ -124,18 +128,19 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
     final bestSellers = ProductRepository.getBestSellers();
     return LayoutBuilder(builder: (context, constraints) {
       final isMobile = constraints.maxWidth < mobileBreakpoint;
+      final isLarge = constraints.maxWidth >= largeBreakpoint;
       return Container(
         padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 60),
         color: Colors.white,
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1200),
+            constraints: BoxConstraints(maxWidth: isLarge ? 1400 : 1200),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 0),
-                  child: _SectionLabel(label: '🔥 Best Sellers'),
+                  child: SectionLabel(label: '🔥 Best Sellers'),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -170,7 +175,7 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
                 : constraints.maxWidth * (isMobile ? 0.95 : 0.9),
             child: Column(
               children: [
-                _SectionLabel(label: '🎉 Promotions Spéciales', center: true),
+                SectionLabel(label: '🎉 Promotions Spéciales', center: true),
                 const SizedBox(height: 8),
                 const Text(
                   'Découvrez nos offres exceptionnelles par catégorie',
@@ -194,7 +199,7 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
                           padding: EdgeInsets.symmetric(
                             horizontal: isMobile ? 8 : 15,
                           ),
-                          child: _PromoCard(
+                          child: PromoCard(
                             title: cat.name,
                             description: "Jusqu'à -20% sur nos ${cat.name.toLowerCase()}",
                             emoji: _emojiFromIcon(cat.icon),
@@ -299,6 +304,7 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
     return LayoutBuilder(builder: (context, constraints) {
       final isMobile = constraints.maxWidth < mobileBreakpoint;
       final isTablet = constraints.maxWidth < tabletBreakpoint;
+      final isLarge = constraints.maxWidth >= largeBreakpoint;
 
       int crossAxis = 4;
       double aspectRatio = 0.85;
@@ -309,17 +315,20 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
       } else if (isTablet) {
         crossAxis = 3;
         aspectRatio = 0.72;
+      } else if (isLarge) {
+        crossAxis = 5;
+        aspectRatio = 0.9;
       }
 
       return Container(
         padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 16 : 24,
+          horizontal: isMobile ? 16 : isLarge ? 32 : 24,
           vertical: isMobile ? 32 : 40,
         ),
         color: Colors.white,
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1300),
+            constraints: BoxConstraints(maxWidth: isLarge ? 1600 : 1300),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -361,7 +370,7 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
                       ),
                     ),
                     if (products.length > 8)
-                      _SeeMoreButton(
+                      SeeMoreButton(
                         onTap: () => Navigator.pushNamed(
                           context,
                           AppRoutes.products,
@@ -372,18 +381,18 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
                 ),
                 const SizedBox(height: 24),
                 limited.isEmpty
-                    ? _EmptyCategory(category: _selectedCategory)
+                    ? EmptyCategory(category: _selectedCategory)
                     : GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: limited.length,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxis,
-                          mainAxisSpacing: isMobile ? 16 : 20,
-                          crossAxisSpacing: isMobile ? 16 : 20,
+                          mainAxisSpacing: isMobile ? 16 : isLarge ? 24 : 20,
+                          crossAxisSpacing: isMobile ? 16 : isLarge ? 24 : 20,
                           childAspectRatio: aspectRatio,
                         ),
-                        itemBuilder: (_, i) => _FeaturedProductCard(
+                        itemBuilder: (_, i) => FeaturedProductCard(
                           product: limited[i],
                           index: i,
                         ),
@@ -423,7 +432,7 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
                     _downloadTextSection(isMobile: true),
                     const SizedBox(height: 40),
                     Center(
-                      child: _deviceImage(
+                      child: deviceImage(
                         image: 'assets/images/swift_phone.png',
                         height: 260,
                         scale: 1.05,
@@ -516,7 +525,7 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
               top: 0, bottom: 0,
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: _deviceImage(
+                child: deviceImage(
                   image: 'assets/images/swift_computer.png',
                   height: computerH,
                   scale: 1.05,
@@ -527,7 +536,7 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
             Positioned(
               right: w * 0.10,
               bottom: stackH * 0.05,
-              child: _deviceImage(
+              child: deviceImage(
                 image: 'assets/images/swift_pad.png',
                 height: padH,
                 scale: 1.05,
@@ -535,7 +544,7 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
             ),
             Positioned(
               bottom: stackH * 0.02,
-              child: _deviceImage(
+              child: deviceImage(
                 image: 'assets/images/swift_phone.png',
                 height: phoneH,
                 scale: 1.1,
@@ -566,10 +575,10 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
   // ─────────────────────────────────────────────
   Widget _buildWhyShop() {
     final items = [
-      _WhyItem(icon: Icons.local_shipping, title: 'Free Delivery', subtitle: 'Fast shipping across Djibouti'),
-      _WhyItem(icon: Icons.lock, title: 'Secure Payment', subtitle: 'Encrypted & safe checkout'),
-      _WhyItem(icon: Icons.verified, title: 'Quality Products', subtitle: 'Verified sellers & brands'),
-      _WhyItem(icon: Icons.support_agent, title: '24/7 Support', subtitle: "We're here anytime"),
+      WhyItem(icon: Icons.local_shipping, title: 'Free Delivery', subtitle: 'Fast shipping across Djibouti'),
+      WhyItem(icon: Icons.lock, title: 'Secure Payment', subtitle: 'Encrypted & safe checkout'),
+      WhyItem(icon: Icons.verified, title: 'Quality Products', subtitle: 'Verified sellers & brands'),
+      WhyItem(icon: Icons.support_agent, title: '24/7 Support', subtitle: "We're here anytime"),
     ];
 
     return LayoutBuilder(builder: (context, constraints) {
@@ -699,7 +708,7 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
     ];
     return Wrap(
       spacing: 16, runSpacing: 16, alignment: WrapAlignment.center,
-      children: socials.map((s) => _SocialChip(icon: s.icon, color: s.color)).toList(),
+      children: socials.map((s) => SocialChip(icon: s.icon, color: s.color)).toList(),
     );
   }
 
@@ -792,712 +801,13 @@ class _HomepageWebState extends State<HomepageWeb> with TickerProviderStateMixin
   }
 }
 
-// ─────────────────────────────────────────────
-//  HERO GALAXY — responsive
-// ─────────────────────────────────────────────
-class HeroGalaxy extends StatefulWidget {
-  final VoidCallback onDownloadTap;
-  const HeroGalaxy({super.key, required this.onDownloadTap});
 
-  @override
-  State<HeroGalaxy> createState() => _HeroGalaxyState();
-}
 
-class _HeroGalaxyState extends State<HeroGalaxy> with TickerProviderStateMixin {
-  late final AnimationController _starsController;
-  late final AnimationController _textController;
-  late final Animation<double> _textFade;
-  late final Animation<Offset> _textSlide;
 
-  final Random _random = Random();
-  late final List<Offset> _stars;
-  late final List<double> _starSizes;
-  late final List<double> _starOpacities;
-  static const int _starCount = 180;
-  static const double _movementRange = 120.0;
 
-  @override
-  void initState() {
-    super.initState();
-    _starsController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
-    _textController =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
-    _textFade = CurvedAnimation(parent: _textController, curve: Curves.easeOut);
-    _textSlide = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic));
 
-    _stars = List.generate(_starCount, (_) => Offset(_random.nextDouble(), _random.nextDouble()));
-    _starSizes = List.generate(_starCount, (_) => _random.nextDouble() * 1.5);
-    _starOpacities = List.generate(_starCount, (_) => 0.25 + _random.nextDouble() * 0.75);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _textController.forward());
-  }
 
-  @override
-  void dispose() {
-    _starsController.dispose();
-    _textController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final isMobile = constraints.maxWidth < 600;
-      final isTablet = constraints.maxWidth < 900;
-      final heroHeight = isMobile ? 480.0 : (isTablet ? 400.0 : 350.0);
-
-      return SizedBox(
-        height: heroHeight,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF0F172A).withOpacity(0.95),
-                      const Color(0xFF1E293B).withOpacity(0.95),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: AnimatedBuilder(
-                animation: _starsController,
-                builder: (_, __) => CustomPaint(
-                  painter: GalaxyPainter(
-                    progress: _starsController.value,
-                    stars: _stars,
-                    sizes: _starSizes,
-                    opacities: _starOpacities,
-                    movementRange: _movementRange,
-                  ),
-                ),
-              ),
-            ),
-            // Mobile : layout vertical centré
-            if (isMobile)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                child: FadeTransition(
-                  opacity: _textFade,
-                  child: SlideTransition(
-                    position: _textSlide,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Your Online Command Hub\nin Djibouti',
-                            style: TextStyle(
-                                fontSize: 30, fontWeight: FontWeight.bold,
-                                color: Colors.white, height: 1.3)),
-                        const SizedBox(height: 14),
-                        const Text('Latest Electronics, Exclusive Deals',
-                            style: TextStyle(fontSize: 15, color: Colors.white70)),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue.shade400,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                              onPressed: () {},
-                              child: const Text('Start Shopping'),
-                            ),
-                            const SizedBox(width: 12),
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.greenAccent.withOpacity(0.8),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                              onPressed: widget.onDownloadTap,
-                              icon: const Icon(Icons.download, color: Colors.black, size: 16),
-                              label: const Text("App", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-            else
-              // Tablet / Desktop : layout horizontal
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 32 : 60,
-                  vertical: 10,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FadeTransition(
-                        opacity: _textFade,
-                        child: SlideTransition(
-                          position: _textSlide,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Your Online Command Hub\nin Djibouti',
-                                  style: TextStyle(
-                                      fontSize: isTablet ? 30 : 42,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      height: 1.3)),
-                              const SizedBox(height: 20),
-                              const Text('Latest Electronics, Exclusive Deals',
-                                  style: TextStyle(fontSize: 18, color: Colors.white70)),
-                              const SizedBox(height: 30),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue.shade400,
-                                  padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 18),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                                onPressed: () {},
-                                child: const Text('Start Shopping'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Tablette : image réduite visible — Desktop : taille normale
-                    ...[
-                      const SizedBox(width: 50),
-                      SizedBox(
-                        height: isTablet ? 300 : 420,
-                        width: isTablet
-                            ? constraints.maxWidth * 0.38
-                            : min(650, constraints.maxWidth * 0.55),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Positioned(
-                              right: 0, top: 0, bottom: 0,
-                              child: Align(
-                                alignment: Alignment.bottomLeft,
-                                child: _deviceImage(
-                                  image: 'assets/images/group.png',
-                                  height: isTablet ? 260 : 400,
-                                  isPrimary: true,
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              right: isTablet ? 60 : 150,
-                              bottom: 6,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.greenAccent.withOpacity(0.8),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: isTablet ? 14 : 28,
-                                    vertical: isTablet ? 12 : 18,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14)),
-                                ),
-                                onPressed: widget.onDownloadTap,
-                                icon: const Icon(Icons.download, color: Colors.black),
-                                label: Text(
-                                  isTablet ? "Télécharger" : "Télécharger l'app",
-                                  style: const TextStyle(
-                                      color: Colors.black, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-          ],
-        ),
-      );
-    });
-  }
-}
-
-// ─────────────────────────────────────────────
-//  GALAXY PAINTER (inchangé)
-// ─────────────────────────────────────────────
-class GalaxyPainter extends CustomPainter {
-  final double progress;
-  final List<Offset> stars;
-  final List<double> sizes;
-  final List<double> opacities;
-  final double movementRange;
-
-  const GalaxyPainter({
-    required this.progress,
-    required this.stars,
-    required this.sizes,
-    required this.opacities,
-    this.movementRange = 120.0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-    for (int i = 0; i < stars.length; i++) {
-      final x = stars[i].dx * size.width;
-      final y = (stars[i].dy * size.height + progress * movementRange) % size.height;
-      paint.color = Colors.white.withOpacity(opacities[i]);
-      canvas.drawCircle(Offset(x, y), sizes[i], paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant GalaxyPainter old) => old.progress != progress;
-}
-
-// ─────────────────────────────────────────────
-// FEATURED PRODUCT CARD — OPTIMISÉ MOBILE
-// ─────────────────────────────────────────────
-class _FeaturedProductCard extends StatefulWidget {
-  final Product product;
-  final int index;
-
-  const _FeaturedProductCard({
-    required this.product,
-    required this.index,
-  });
-
-  @override
-  State<_FeaturedProductCard> createState() => _FeaturedProductCardState();
-}
-
-class _FeaturedProductCardState extends State<_FeaturedProductCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scale;
-
-  bool _hovered = false;
-  bool _favorited = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-
-    _scale = Tween<double>(begin: 1, end: 1.04).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _openDetail() {
-    showDialog(
-      context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: DetailProductPopup(product: widget.product),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
-    final isMobile = width < 600;
-    final isTablet = width >= 600 && width < 1024;
-
-    return MouseRegion(
-      onEnter: (_) {
-        if (!isMobile) {
-          _controller.forward();
-          setState(() => _hovered = true);
-        }
-      },
-      onExit: (_) {
-        if (!isMobile) {
-          _controller.reverse();
-          setState(() => _hovered = false);
-        }
-      },
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (_, __) {
-          return Transform.scale(
-            scale: _scale.value,
-            child: GestureDetector(
-              onTap: _openDetail,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(isMobile ? 14 : 18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(
-                        _hovered ? 0.15 : 0.08,
-                      ),
-                      blurRadius: _hovered ? 18 : 10,
-                      offset: const Offset(0, 6),
-                    )
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // IMAGE
-                    AspectRatio(
-                      aspectRatio: isMobile ? 1.1 : 1.2,
-                      child: Stack(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: lightGrey,
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(isMobile ? 16 : 20),
-                              ),
-                            ),
-                            child: Center(
-                              child: AnimatedScale(
-                                scale: (_hovered && !isMobile) ? 1.08 : 1.0,
-                                duration: const Duration(milliseconds: 300),
-                                child: Text(
-                                  widget.product.image,
-                                  style: TextStyle(
-                                    fontSize: isMobile ? 48 : 56,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          // BADGE
-                          if (widget.product.isBestSeller)
-                            Positioned(
-                              top: 8,
-                              left: 8,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Colors.redAccent, Colors.orange],
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Text(
-                                  'HOT',
-                                  style: TextStyle(color: Colors.white, fontSize: 10),
-                                ),
-                              ),
-                            ),
-
-                          // FAVORITE
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () => setState(() => _favorited = !_favorited),
-                              child: Icon(
-                                _favorited ? Icons.favorite : Icons.favorite_border,
-                                size: 18,
-                                color: _favorited ? Colors.red : Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // CONTENT (flexible)
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(isMobile ? 10 : 14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // CATEGORY
-                            Text(
-                              widget.product.category,
-                              style: TextStyle(
-                                fontSize: isMobile ? 10 : 11,
-                                color: primaryBlue,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-
-                            const SizedBox(height: 4),
-
-                            // TITLE
-                            Text(
-                              widget.product.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: isMobile ? 12 : 13,
-                                fontWeight: FontWeight.w600,
-                                color: textDark,
-                              ),
-                            ),
-
-                            const SizedBox(height: 6),
-
-                            // RATING
-                            Row(
-                              children: [
-                                ...List.generate(
-                                  5,
-                                  (i) => Icon(
-                                    i < widget.product.rating.floor()
-                                        ? Icons.star
-                                        : Icons.star_border,
-                                    size: 12,
-                                    color: Colors.amber,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  "(${widget.product.reviews})",
-                                  style: TextStyle(fontSize: 10, color: Colors.grey),
-                                ),
-                              ],
-                            ),
-
-                            const Spacer(),
-
-                            // PRICE + BTN
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '\$${widget.product.price.toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    fontSize: isMobile ? 14 : 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryBlue,
-                                  ),
-                                ),
-
-                                InkWell(
-                                  onTap: _openDetail,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: primaryBlue,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: const Icon(
-                                      Icons.add_shopping_cart,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-//  SEE MORE BUTTON
-// ─────────────────────────────────────────────
-class _SeeMoreButton extends StatefulWidget {
-  final VoidCallback onTap;
-  const _SeeMoreButton({required this.onTap});
-
-  @override
-  State<_SeeMoreButton> createState() => _SeeMoreButtonState();
-}
-
-class _SeeMoreButtonState extends State<_SeeMoreButton> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          decoration: BoxDecoration(
-            color: _hovered ? primaryBlue : Colors.transparent,
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: primaryBlue),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
-                    color: _hovered ? Colors.white : primaryBlue),
-                child: const Text('Voir tout'),
-              ),
-              const SizedBox(width: 6),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                transform: Matrix4.translationValues(_hovered ? 3 : 0, 0, 0),
-                child: Icon(Icons.arrow_forward, size: 14, color: _hovered ? Colors.white : primaryBlue),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-//  EMPTY CATEGORY
-// ─────────────────────────────────────────────
-class _EmptyCategory extends StatelessWidget {
-  final String category;
-  const _EmptyCategory({required this.category});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 200,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.inventory_2_outlined, size: 48, color: Colors.grey.shade300),
-            const SizedBox(height: 12),
-            Text('Aucun produit dans "$category"',
-                style: TextStyle(fontSize: 15, color: Colors.grey.shade400)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-//  SECTION LABEL
-// ─────────────────────────────────────────────
-class _SectionLabel extends StatelessWidget {
-  final String label;
-  final bool center;
-  const _SectionLabel({required this.label, this.center = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(label,
-        textAlign: center ? TextAlign.center : TextAlign.start,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textDark));
-  }
-}
-
-// ─────────────────────────────────────────────
-//  DEVICE IMAGE
-// ─────────────────────────────────────────────
-Widget _deviceImage({
-  required String image,
-  required double height,
-  double scale = 1.0,
-  double opacity = 1.0,
-  bool isPrimary = false,
-}) {
-  return Opacity(
-    opacity: opacity,
-    child: Transform.scale(
-      scale: scale,
-      child: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isPrimary ? 0.25 : 0.15),
-              blurRadius: isPrimary ? 40 : 25,
-              offset: const Offset(0, 20),
-            ),
-          ],
-        ),
-        child: Image.asset(image, height: height, fit: BoxFit.contain),
-      ),
-    ),
-  );
-}
-
-// ─────────────────────────────────────────────
-//  HOVER SCALE CARD
-// ─────────────────────────────────────────────
-class HoverScaleCard extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final double scaleEnd;
-  final Duration duration;
-
-  const HoverScaleCard({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.scaleEnd = 1.04,
-    this.duration = const Duration(milliseconds: 250),
-  });
-
-  @override
-  State<HoverScaleCard> createState() => _HoverScaleCardState();
-}
-
-class _HoverScaleCardState extends State<HoverScaleCard> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this, duration: widget.duration);
-    _scale = Tween<double>(begin: 1, end: widget.scaleEnd)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => _controller.forward(),
-      onExit: (_) => _controller.reverse(),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: ScaleTransition(scale: _scale, child: widget.child),
-      ),
-    );
-  }
-}
 
 // ─────────────────────────────────────────────
 //  ANIMATED CATEGORY CARD — responsive
@@ -1672,7 +982,7 @@ class _BestSellerCarouselState extends State<_BestSellerCarousel> {
               final product = widget.products[i % widget.products.length];
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: _BestSellerCard(product: product),
+                child: BestSellerCard(product: product),
               );
             },
           ),
@@ -1698,257 +1008,7 @@ class _BestSellerCarouselState extends State<_BestSellerCarousel> {
   }
 }
 
-// ─────────────────────────────────────────────
-//  BEST SELLER CARD
-// ─────────────────────────────────────────────
-class _BestSellerCard extends StatelessWidget {
-  final Product product;
-  const _BestSellerCard({required this.product});
 
-  void _openDetail(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (_) => Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: DetailProductPopup(product: product),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return HoverScaleCard(
-      onTap: () => _openDetail(context),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: Colors.white.withOpacity(0.85),
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 10))],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Colors.redAccent, Colors.orange]),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text('HOT',
-                    style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-              ),
-              const Icon(Icons.favorite_border, size: 18, color: Colors.grey),
-            ]),
-            const SizedBox(height: 10),
-            Expanded(child: Center(child: Text(product.image, style: const TextStyle(fontSize: 42)))),
-            const SizedBox(height: 10),
-            Text(product.title, maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-            const SizedBox(height: 6),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('\$${product.price}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: primaryBlue)),
-              Container(
-                decoration: BoxDecoration(color: primaryBlue, borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.all(6),
-                child: const Icon(Icons.shopping_cart, color: Colors.white, size: 16),
-              ),
-            ]),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-//  PROMO CARD
-// ─────────────────────────────────────────────
-class _PromoCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final String emoji;
-  final Color color;
-  final String categoryName;
-
-  const _PromoCard({
-    required this.title,
-    required this.description,
-    required this.emoji,
-    required this.color,
-    required this.categoryName,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isMobile = width < 600;
-
-    return HoverScaleCard(
-      onTap: () => Navigator.pushNamed(
-        context,
-        AppRoutes.promo,
-        arguments: categoryName,
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: Colors.white,
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              offset: Offset(0, 6),
-            )
-          ],
-        ),
-        child: AspectRatio(
-          aspectRatio: isMobile ? 1.1 : 1.2,
-          child: Padding(
-            padding: EdgeInsets.all(isMobile ? 14 : 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // ICON
-                Container(
-                  width: isMobile ? 50 : 60,
-                  height: isMobile ? 50 : 60,
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Center(
-                    child: Text(
-                      emoji,
-                      style: TextStyle(
-                        fontSize: isMobile ? 24 : 30,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // TITLE
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: isMobile ? 14 : 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // DESCRIPTION (flexible)
-                Expanded(
-                  child: Text(
-                    description,
-                    textAlign: TextAlign.center,
-                    maxLines: isMobile ? 2 : 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: isMobile ? 12 : 13,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // CTA (optionnel stylé)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    "Voir",
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: color,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-//  WHY ITEM
-// ─────────────────────────────────────────────
-class _WhyItem extends StatefulWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  const _WhyItem({required this.icon, required this.title, required this.subtitle});
-
-  @override
-  State<_WhyItem> createState() => _WhyItemState();
-}
-
-class _WhyItemState extends State<_WhyItem> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        margin: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: _hovered ? primaryBlue.withOpacity(0.04) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: _hovered ? primaryBlue.withOpacity(0.15) : primaryBlue.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(widget.icon, color: primaryBlue, size: 26),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.title,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15,
-                          color: _hovered ? primaryBlue : textDark)),
-                  const SizedBox(height: 4),
-                  Text(widget.subtitle, style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ─────────────────────────────────────────────
 //  SOCIAL CHIP
@@ -2066,7 +1126,7 @@ class _FooterColumnSocials extends StatelessWidget {
         _FooterSectionTitle('Follow Us'),
         const SizedBox(height: 20),
         Wrap(spacing: 12, runSpacing: 12,
-            children: socials.map((s) => _SocialChip(icon: s.icon, color: s.color)).toList()),
+            children: socials.map((s) => SocialChip(icon: s.icon, color: s.color)).toList()),
         const SizedBox(height: 28),
         _FooterSectionTitle('Contact'),
         const SizedBox(height: 12),
