@@ -6,6 +6,8 @@ class FeaturedProductCard extends StatefulWidget {
   final int index;
   final VoidCallback? onTap;
   final VoidCallback? onFavorite;
+  final VoidCallback? onAddToCart;
+  final VoidCallback? onBuyNow;
 
   const FeaturedProductCard({
     super.key,
@@ -13,6 +15,8 @@ class FeaturedProductCard extends StatefulWidget {
     required this.index,
     this.onTap,
     this.onFavorite,
+    this.onAddToCart,
+    this.onBuyNow,
   });
 
   @override
@@ -143,6 +147,8 @@ class _FeaturedProductCardState extends State<FeaturedProductCard>
                       setState(() => _isFavorited = !_isFavorited);
                       widget.onFavorite?.call();
                     },
+                    onAddToCart: widget.onAddToCart,
+                    onBuyNow: widget.onBuyNow,
                   ),
                 ],
               ),
@@ -170,24 +176,36 @@ class _ImageSection extends StatelessWidget {
         SizedBox(
           height: sizes.imageHeight,
           width: double.infinity,
-          child: Container(
-            color: const Color(0xFFF3F4F6),
-            child: const Center(
-              child: Icon(Icons.image_outlined, size: 48, color: Color(0xFFD1D5DB)),
-            ),
+          child: Image.network(
+            product.image,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _ImagePlaceholder(height: sizes.imageHeight),
           ),
         ),
 
-        // Category badge
-        Positioned(
-          top: 10,
-          right: 10,
-          child: _Badge(
-            label: product.category,
-            color: const Color(0xFF1E3A8A).withOpacity(0.85),
-            fontSize: sizes.badgeSize,
+        // Discount badge (shown only if product has a discount)
+        if (product.discount != null && product.discount! > 0)
+          Positioned(
+            top: 10,
+            left: 10,
+            child: _Badge(
+              label: '-${product.discount}%',
+              color: const Color(0xFFEF4444),
+              fontSize: sizes.badgeSize,
+            ),
           ),
-        ),
+
+        // Category badge
+        if (product.category.isNotEmpty)
+          Positioned(
+            top: 10,
+            right: 10,
+            child: _Badge(
+              label: product.category,
+              color: const Color(0xFF1E3A8A).withOpacity(0.85),
+              fontSize: sizes.badgeSize,
+            ),
+          ),
       ],
     );
   }
@@ -200,24 +218,30 @@ class _DetailsSection extends StatelessWidget {
   final _CardSizes sizes;
   final bool isFavorited;
   final VoidCallback onFavorite;
+  final VoidCallback? onAddToCart;
+  final VoidCallback? onBuyNow;
 
   const _DetailsSection({
     required this.product,
     required this.sizes,
     required this.isFavorited,
     required this.onFavorite,
+    this.onAddToCart,
+    this.onBuyNow,
   });
 
   @override
   Widget build(BuildContext context) {
     final p = sizes.padding;
+    // Sur mobile (carte ~150px) : icônes seules pour gagner de la place
+    // Sur tablette/desktop : icône + texte court
+    final isMobileCard = sizes.cardWidth <= 160;
 
     return Padding(
-      // Padding uniforme et compact, proportionnel au breakpoint
       padding: EdgeInsets.symmetric(horizontal: p, vertical: p * 0.75),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,   // ← clé : ne jamais prendre plus de place que nécessaire
+        mainAxisSize: MainAxisSize.min,
         children: [
           // ── Titre + Favori ──────────────────────────────────────────────
           Row(
@@ -289,14 +313,41 @@ class _DetailsSection extends StatelessWidget {
           SizedBox(height: p * 0.45),
 
           // ── Prix ────────────────────────────────────────────────────────
-          Text(
-            '\$${product.price.toStringAsFixed(2)}',
-            style: TextStyle(
-              fontSize: sizes.priceSize,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF1E3A8A),
-              letterSpacing: -0.3,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '\$${product.price.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: sizes.priceSize,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF1E3A8A),
+                  letterSpacing: -0.3,
+                ),
+              ),
+              if (product.originalPrice != null) ...[
+                SizedBox(width: p * 0.4),
+                Text(
+                  '\$${product.originalPrice!.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: sizes.priceSize - 3,
+                    color: Colors.grey[400],
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+              ],
+            ],
+          ),
+
+          SizedBox(height: p * 0.65),
+
+          // ── Boutons Panier + Acheter ─────────────────────────────────────
+          _ActionButtons(
+            sizes: sizes,
+            isMobileCard: isMobileCard,
+            onAddToCart: onAddToCart,
+            onBuyNow: onBuyNow,
           ),
         ],
       ),
@@ -304,7 +355,242 @@ class _DetailsSection extends StatelessWidget {
   }
 }
 
+// ─── Boutons d'action (Panier + Acheter) ───────────────────────────────────
+
+class _ActionButtons extends StatefulWidget {
+  final _CardSizes sizes;
+  final bool isMobileCard;
+  final VoidCallback? onAddToCart;
+  final VoidCallback? onBuyNow;
+
+  const _ActionButtons({
+    required this.sizes,
+    required this.isMobileCard,
+    this.onAddToCart,
+    this.onBuyNow,
+  });
+
+  @override
+  State<_ActionButtons> createState() => _ActionButtonsState();
+}
+
+class _ActionButtonsState extends State<_ActionButtons>
+    with SingleTickerProviderStateMixin {
+  // Animation de confirmation "ajouté au panier" (✓ pendant 1.2s)
+  late final AnimationController _checkCtrl;
+  bool _added = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..addStatusListener((s) {
+        if (s == AnimationStatus.completed) {
+          if (mounted) setState(() => _added = false);
+          _checkCtrl.reset();
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _checkCtrl.dispose();
+    super.dispose();
+  }
+
+  void _handleAddToCart() {
+    setState(() => _added = true);
+    _checkCtrl.forward();
+    widget.onAddToCart?.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.sizes;
+    final p = s.padding;
+    // Taille des boutons selon le breakpoint
+    final btnHeight = s.cardWidth <= 160 ? 28.0 : 32.0;
+    final iconSize = s.cardWidth <= 160 ? 14.0 : 15.0;
+    final fontSize = s.titleSize - 1.0;
+    final gap = p * 0.5;
+
+    return Row(
+      children: [
+        // ── Bouton Panier ──────────────────────────────────────────────────
+        Expanded(
+          child: _CartButton(
+            height: btnHeight,
+            iconSize: iconSize,
+            fontSize: fontSize,
+            isMobile: widget.isMobileCard,
+            added: _added,
+            onTap: _handleAddToCart,
+          ),
+        ),
+
+        SizedBox(width: gap),
+
+        // ── Bouton Acheter maintenant ──────────────────────────────────────
+        Expanded(
+          child: _BuyButton(
+            height: btnHeight,
+            iconSize: iconSize,
+            fontSize: fontSize,
+            isMobile: widget.isMobileCard,
+            onTap: widget.onBuyNow,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Bouton Panier avec animation ✓ ─────────────────────────────────────────
+
+class _CartButton extends StatelessWidget {
+  final double height;
+  final double iconSize;
+  final double fontSize;
+  final bool isMobile;
+  final bool added;
+  final VoidCallback onTap;
+
+  const _CartButton({
+    required this.height,
+    required this.iconSize,
+    required this.fontSize,
+    required this.isMobile,
+    required this.added,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      height: height,
+      decoration: BoxDecoration(
+        color: added ? const Color(0xFF16A34A) : const Color(0xFF1E3A8A),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: added ? null : onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Center(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: added
+                  ? Icon(
+                      Icons.check_rounded,
+                      key: const ValueKey('check'),
+                      color: Colors.white,
+                      size: iconSize,
+                    )
+                  : Row(
+                      key: const ValueKey('cart'),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.shopping_cart_outlined,
+                            color: Colors.white, size: iconSize),
+                        if (!isMobile) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            'Panier',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: fontSize,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Bouton Acheter maintenant ───────────────────────────────────────────────
+
+class _BuyButton extends StatelessWidget {
+  final double height;
+  final double iconSize;
+  final double fontSize;
+  final bool isMobile;
+  final VoidCallback? onTap;
+
+  const _BuyButton({
+    required this.height,
+    required this.iconSize,
+    required this.fontSize,
+    required this.isMobile,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFF1E3A8A), width: 1.2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(8),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.bolt_rounded,
+                      color: const Color(0xFF1E3A8A), size: iconSize),
+                  if (!isMobile) ...[
+                    const SizedBox(width: 3),
+                    Text(
+                      'Acheter',
+                      style: TextStyle(
+                        color: const Color(0xFF1E3A8A),
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────────────
+
+
+class _ImagePlaceholder extends StatelessWidget {
+  final double height;
+  const _ImagePlaceholder({required this.height});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        height: height,
+        color: const Color(0xFFF3F4F6),
+        child: const Center(
+          child: Icon(Icons.image_outlined, size: 48, color: Color(0xFFD1D5DB)),
+        ),
+      );
+}
 
 class _Badge extends StatelessWidget {
   final String label;

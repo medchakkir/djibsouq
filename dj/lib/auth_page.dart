@@ -1,16 +1,23 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:dj/layouts/web/home_web.dart';
 
-// ─────────────────────────────────────────────
-//  CONSTANTS (same as home_web.dart)
-// ─────────────────────────────────────────────
-const Color primaryBlue = Color(0xFF1E3A8A);
-const Color lightGrey = Color(0xFFF3F4F6);
-const Color textDark = Color(0xFF111827);
+// ─── Palette (optimisée pour lisibilité) ─────────────────────────────────────
+const _kNavy = Color(0xFF0A1128); // Fond sombre principal
+const _kBlue = Color(0xFF1E40AF); // Bleu principal
+const _kIndigo = Color(0xFF4F46E5); // Accent indigo
+const _kCyan = Color(0xFF22D3EE); // Cyan vif
+const _kGold = Color(0xFFF59E0B); // Or
+const _kWhite = Colors.white;
+const _kBg = Color(0xFFF8FAFC); // Fond clair
+const _kText = Color(0xFF0F172A); // Texte principal
+const _kMuted = Color(0xFF64748B); // Texte secondaire
+const _kBorder = Color(0xFFCBD5E1); // Bordures
 
-// ─────────────────────────────────────────────
-//  AUTH WRAPPER  (Sign In / Sign Up toggling)
-// ─────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+//  AUTH PAGE
+// ══════════════════════════════════════════════════════════════════════════════
+
 class AuthPage extends StatefulWidget {
   final bool startOnSignUp;
   const AuthPage({super.key, this.startOnSignUp = false});
@@ -20,987 +27,607 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
-  late bool _showSignUp;
+  late bool _isSignUp;
 
-  late AnimationController _panelCtrl;
-  late Animation<double> _panelFade;
-  late Animation<Offset> _panelSlide;
-
-  late AnimationController _bgCtrl;   // stars rotation
-  final Random _rng = Random();
-
-  late List<Offset> _stars;
-  late List<double> _starSizes;
-  late List<double> _starOpacities;
-  static const int _starCount = 160;
+  late final AnimationController _morphCtrl;
+  late final Animation<double> _morphAnim;
+  late final AnimationController _particleCtrl;
+  late final List<_Particle> _particles;
+  late final AnimationController _enterCtrl;
+  late final Animation<double> _enterAnim;
 
   @override
   void initState() {
     super.initState();
-    _showSignUp = widget.startOnSignUp;
+    _isSignUp = widget.startOnSignUp;
 
-    // panel anim
-    _panelCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 500));
-    _panelFade =
-        CurvedAnimation(parent: _panelCtrl, curve: Curves.easeOut);
-    _panelSlide =
-        Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
-            .animate(CurvedAnimation(
-                parent: _panelCtrl, curve: Curves.easeOutCubic));
+    _morphCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+      value: _isSignUp ? 1.0 : 0.0,
+    );
+    _morphAnim = CurvedAnimation(
+      parent: _morphCtrl,
+      curve: Curves.easeInOutCubic,
+    );
 
-    // background stars
-    _bgCtrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 12))
-      ..repeat();
+    _particleCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 22),
+    )..repeat();
 
-    _stars = List.generate(
-        _starCount, (_) => Offset(_rng.nextDouble(), _rng.nextDouble()));
-    _starSizes =
-        List.generate(_starCount, (_) => _rng.nextDouble() * 1.6 + 0.2);
-    _starOpacities = List.generate(
-        _starCount, (_) => 0.2 + _rng.nextDouble() * 0.7);
+    final rng = Random(42);
+    _particles = List.generate(18, (_) => _Particle(rng));
 
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _panelCtrl.forward());
+    _enterCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 950),
+    );
+    _enterAnim = CurvedAnimation(parent: _enterCtrl, curve: Curves.easeOutExpo);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _enterCtrl.forward());
   }
 
   @override
   void dispose() {
-    _panelCtrl.dispose();
-    _bgCtrl.dispose();
+    _morphCtrl.dispose();
+    _particleCtrl.dispose();
+    _enterCtrl.dispose();
     super.dispose();
   }
 
-  void _switchMode() {
-    _panelCtrl.reverse().then((_) {
-      setState(() => _showSignUp = !_showSignUp);
-      _panelCtrl.forward();
-    });
+  void _toggle() {
+    setState(() => _isSignUp = !_isSignUp);
+    _isSignUp ? _morphCtrl.forward() : _morphCtrl.reverse();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF080F1E),
+      backgroundColor: _kBg,
       body: Stack(
         children: [
-          // ── Animated star background ──────────────────
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF080F1E),
-                    Color(0xFF0F172A),
-                    Color(0xFF1E293B),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          // Fond animé
+          Positioned.fill(child: _AnimatedBackground(anim: _morphAnim)),
+
+          // Particules
           Positioned.fill(
             child: AnimatedBuilder(
-              animation: _bgCtrl,
-              builder: (_, __) => CustomPaint(
-                painter: _StarsPainter(
-                  progress: _bgCtrl.value,
-                  stars: _stars,
-                  sizes: _starSizes,
-                  opacities: _starOpacities,
+              animation: _particleCtrl,
+              builder: (context, child) => CustomPaint(
+                painter: _ParticlePainter(_particles, _particleCtrl.value),
+              ),
+            ),
+          ),
+
+          // Bouton Accueil
+          SafeArea(
+            child: Positioned(
+              top: 200,
+              left: 200,
+              child: _HomeButton(
+                onTap: () => Navigator.of(context).pushReplacement(
+                  PageRouteBuilder(
+                    settings: const RouteSettings(name: '/'),
+                    pageBuilder: (_, __, ___) => const HomepageWeb(),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
                 ),
               ),
             ),
           ),
 
-          // ── Glow blobs ────────────────────────────────
-          Positioned(
-            left: -120, top: -120,
-            child: _GlowBlob(color: primaryBlue.withOpacity(0.35), size: 500),
+          // Contenu principal
+          SafeArea(
+            child: AnimatedBuilder(
+              animation: _enterAnim,
+              builder: (context, child) => Opacity(
+                opacity: _enterAnim.value,
+                child: Transform.translate(
+                  offset: Offset(0, 40 * (1 - _enterAnim.value)),
+                  child: child,
+                ),
+              ),
+              child: isMobile
+                  ? _MobileShell(isSignUp: _isSignUp, onToggle: _toggle)
+                  : _DesktopShell(isSignUp: _isSignUp, onToggle: _toggle),
+            ),
           ),
-          Positioned(
-            right: -80, bottom: -80,
-            child: _GlowBlob(
-                color: Colors.cyanAccent.withOpacity(0.12), size: 400),
-          ),
-
-          // ── Responsive layout ─────────────────────────
-          LayoutBuilder(builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 700;
-            return isMobile
-                ? _mobilelayout(constraints)
-                : _desktopLayout(constraints);
-          }),
         ],
       ),
     );
   }
+}
 
-  // ─────────────────────────────────────────────
-  //  DESKTOP  (split screen)
-  // ─────────────────────────────────────────────
-  Widget _desktopLayout(BoxConstraints c) {
+// ─── Bouton Accueil ──────────────────────────────────────────────────────────
+class _HomeButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _HomeButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(30),
+        onTap: () => onTap(),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [Icon(Icons.home_rounded, color: _kBlue, size: 30)],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Fond Animé + Particules (inchangés mais conservés) ───────────────────────
+class _AnimatedBackground extends StatelessWidget {
+  final Animation<double> anim;
+  const _AnimatedBackground({required this.anim});
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: anim,
+    builder: (context, child) => CustomPaint(painter: _BgPainter(anim.value)),
+  );
+}
+
+class _BgPainter extends CustomPainter {
+  final double t;
+  _BgPainter(this.t);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Wave + Orb (code inchangé)
+    final path = Path();
+    final waveY = size.height * 0.55 + sin(t * pi) * size.height * 0.06;
+    path.moveTo(0, waveY);
+    path.cubicTo(
+      size.width * (0.25 + t * 0.2),
+      waveY - size.height * 0.22,
+      size.width * (0.7 - t * 0.1),
+      waveY + size.height * 0.18,
+      size.width,
+      waveY - size.height * 0.05,
+    );
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.lerp(_kNavy, const Color(0xFF1E2A6B), t)!,
+            Color.lerp(_kBlue, _kIndigo, t)!,
+          ],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
+    );
+
+    final orbX = size.width * (0.82 - t * 0.45);
+    canvas.drawCircle(
+      Offset(orbX, size.height * 0.28),
+      size.width * 0.42,
+      Paint()
+        ..shader =
+            RadialGradient(
+              colors: [
+                Color.lerp(_kCyan, _kGold, t)!.withOpacity(0.25),
+                Colors.transparent,
+              ],
+            ).createShader(
+              Rect.fromCircle(
+                center: Offset(orbX, size.height * 0.28),
+                radius: size.width * 0.42,
+              ),
+            ),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BgPainter old) => old.t != t;
+}
+
+// ── Particules ───────────────────────────────────────────────────────────────
+
+class _Particle {
+  final double x, startY, size, speed, opacity;
+  _Particle(Random rng)
+    : x = rng.nextDouble(),
+      startY = rng.nextDouble(),
+      size = rng.nextDouble() * 3 + 1,
+      speed = rng.nextDouble() * 0.4 + 0.15,
+      opacity = rng.nextDouble() * 0.4 + 0.1;
+}
+
+class _ParticlePainter extends CustomPainter {
+  final List<_Particle> particles;
+  final double t;
+  _ParticlePainter(this.particles, this.t);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final p in particles) {
+      final y = (p.startY - t * p.speed) % 1.0;
+      canvas.drawCircle(
+        Offset(p.x * size.width, y * size.height),
+        p.size,
+        Paint()
+          ..color = _kCyan.withOpacity(
+            p.opacity * (0.6 + 0.4 * sin(t * pi * 2 + p.x * 10)),
+          ),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ParticlePainter old) => old.t != t;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  LAYOUTS
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _DesktopShell extends StatelessWidget {
+  final bool isSignUp;
+  final VoidCallback onToggle;
+  const _DesktopShell({required this.isSignUp, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
-        // Left brand panel
         Expanded(
           flex: 5,
-          child: _BrandPanel(onSwitchTap: _switchMode, isSignUp: _showSignUp),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Logo(),
+                const Spacer(),
+                _BrandHeadline(isSignUp: isSignUp),
+                const SizedBox(height: 48),
+                _FeatureList(),
+                const Spacer(),
+                _PanelToggleBtn(isSignUp: isSignUp, onTap: onToggle),
+              ],
+            ),
+          ),
         ),
-
-        // Right form panel
         Expanded(
           flex: 4,
-          child: Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: FadeTransition(
-                opacity: _panelFade,
-                child: SlideTransition(
-                  position: _panelSlide,
-                  child: _showSignUp
-                      ? _SignUpForm(onSwitch: _switchMode)
-                      : _SignInForm(onSwitch: _switchMode),
-                ),
-              ),
+              constraints: const BoxConstraints(maxWidth: 460),
+              child: _FormCard(isSignUp: isSignUp, onToggle: onToggle),
             ),
           ),
         ),
       ],
     );
   }
+}
 
-  // ─────────────────────────────────────────────
-  //  MOBILE  (stacked)
-  // ─────────────────────────────────────────────
-  Widget _mobilelayout(BoxConstraints c) {
+class _MobileShell extends StatelessWidget {
+  final bool isSignUp;
+  final VoidCallback onToggle;
+  const _MobileShell({required this.isSignUp, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       child: Column(
         children: [
-          // mini brand header
-          Container(
-            width: double.infinity,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 40, 24, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Logo row
-                Row(children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: primaryBlue,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.shopping_bag,
-                        color: Colors.white, size: 22),
+                _Logo(),
+                const SizedBox(height: 28),
+                _BrandHeadline(isSignUp: isSignUp),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _FormCard(isSignUp: isSignUp, onToggle: onToggle),
+          ),
+          const SizedBox(height: 20),
+          _PanelToggleBtn(isSignUp: isSignUp, onTap: onToggle),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  FORM CARD + CONTENTS
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _FormCard extends StatelessWidget {
+  final bool isSignUp;
+  final VoidCallback onToggle;
+
+  const _FormCard({required this.isSignUp, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _kWhite.withOpacity(0.97),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: _kNavy.withOpacity(0.15),
+            blurRadius: 70,
+            offset: const Offset(0, 25),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 600),
+            switchInCurve: Curves.easeOutBack,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, anim) => FadeTransition(
+              opacity: anim,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: Offset(
+                    child.key == const ValueKey('up') ? 0.6 : -0.6,
+                    0,
                   ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'DJIBSOUQ',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 22,
-                      letterSpacing: 2,
+                  end: Offset.zero,
+                ).animate(anim),
+                child: child,
+              ),
+            ),
+            child: isSignUp
+                ? _SignUpContent(key: const ValueKey('up'), onToggle: onToggle)
+                : _SignInContent(key: const ValueKey('in'), onToggle: onToggle),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Sign In & Sign Up restent presque identiques (seulement petites corrections mineures)
+
+class _SignInContent extends StatefulWidget {
+  final VoidCallback onToggle;
+  const _SignInContent({super.key, required this.onToggle});
+
+  @override
+  State<_SignInContent> createState() => _SignInContentState();
+}
+
+class _SignInContentState extends State<_SignInContent> {
+  bool _obscure = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(36),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _ModePill(label: 'Connexion', color: _kBlue),
+          const SizedBox(height: 16),
+          const Text(
+            'Bon retour 👋',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: _kText,
+              letterSpacing: -0.8,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Accédez à votre espace DJIBSOUQ',
+            style: TextStyle(fontSize: 13.5, color: _kMuted),
+          ),
+          const SizedBox(height: 32),
+          _SocialGrid(),
+          const SizedBox(height: 28),
+          const _OrLine(),
+          const SizedBox(height: 28),
+          _GlassField(hint: 'Email', icon: Icons.alternate_email_rounded),
+          const SizedBox(height: 16),
+          _GlassField(
+            hint: 'Mot de passe',
+            icon: Icons.shield_outlined,
+            obscure: _obscure,
+            trailing: _EyeToggle(
+              obscure: _obscure,
+              onTap: () => setState(() => _obscure = !_obscure),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _MiniCheck(label: 'Se souvenir'),
+              const Text(
+                'Mot de passe oublié ?',
+                style: TextStyle(
+                  color: _kIndigo,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          _GradientButton(
+            label: 'Se connecter',
+            icon: Icons.arrow_forward_rounded,
+            colors: const [_kBlue, _kIndigo],
+            onPressed: () {},
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  SIGN UP CONTENT
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _SignUpContent extends StatefulWidget {
+  final VoidCallback onToggle;
+  const _SignUpContent({super.key, required this.onToggle});
+
+  @override
+  State<_SignUpContent> createState() => _SignUpContentState();
+}
+
+class _SignUpContentState extends State<_SignUpContent> {
+  bool _obscure = true;
+  bool _obscureConfirm = true;
+  bool _agreedToTerms = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(36),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _ModePill(label: 'Inscription', color: _kCyan),
+          const SizedBox(height: 16),
+          const Text(
+            'Rejoignez DJIBSOUQ 🎉',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: _kText,
+              letterSpacing: -0.8,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Créez votre compte pour commencer',
+            style: TextStyle(fontSize: 13.5, color: _kMuted),
+          ),
+          const SizedBox(height: 32),
+          _SocialGrid(),
+          const SizedBox(height: 28),
+          const _OrLine(),
+          const SizedBox(height: 28),
+          _GlassField(hint: 'Nom complet', icon: Icons.person_outline_rounded),
+          const SizedBox(height: 16),
+          _GlassField(hint: 'Email', icon: Icons.alternate_email_rounded),
+          const SizedBox(height: 16),
+          _GlassField(
+            hint: 'Mot de passe',
+            icon: Icons.shield_outlined,
+            obscure: _obscure,
+            trailing: _EyeToggle(
+              obscure: _obscure,
+              onTap: () => setState(() => _obscure = !_obscure),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _GlassField(
+            hint: 'Confirmer mot de passe',
+            icon: Icons.shield_outlined,
+            obscure: _obscureConfirm,
+            trailing: _EyeToggle(
+              obscure: _obscureConfirm,
+              onTap: () => setState(() => _obscureConfirm = !_obscureConfirm),
+            ),
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+            child: Row(
+              children: [
+                _AnimCheck(checked: _agreedToTerms),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'J\'accepte les conditions\nd\'utilisation et la politique\nde confidentialité',
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: _kMuted,
+                      height: 1.3,
                     ),
-                  ),
-                ]),
-                const SizedBox(height: 16),
-                Text(
-                  _showSignUp ? 'Créer un compte' : 'Bon retour 👋',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ),
-
-          // Form card
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Color(0xFF0F172A),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            ),
-            child: FadeTransition(
-              opacity: _panelFade,
-              child: SlideTransition(
-                position: _panelSlide,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 32),
-                  child: _showSignUp
-                      ? _SignUpForm(onSwitch: _switchMode)
-                      : _SignInForm(onSwitch: _switchMode),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-//  BRAND PANEL  (desktop left side)
-// ─────────────────────────────────────────────
-class _BrandPanel extends StatelessWidget {
-  final VoidCallback onSwitchTap;
-  final bool isSignUp;
-  const _BrandPanel({required this.onSwitchTap, required this.isSignUp});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF0F172A),
-            primaryBlue.withOpacity(0.85),
-          ],
-        ),
-        border: Border(
-          right: BorderSide(color: Colors.white.withOpacity(0.06), width: 1),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 60),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Logo ──────────────────────────────
-          Row(children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: Colors.white.withOpacity(0.15), width: 1),
-              ),
-              child: const Icon(Icons.shopping_bag,
-                  color: Colors.white, size: 26),
-            ),
-            const SizedBox(width: 14),
-            const Text(
-              'DJIBSOUQ',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 26,
-                letterSpacing: 2.5,
-              ),
-            ),
-          ]),
-
-          const Spacer(),
-
-          // ── Main headline ─────────────────────
-          Text(
-            isSignUp
-                ? 'Rejoignez\nla communauté.'
-                : 'Bon retour\nparmi nous.',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 46,
-              fontWeight: FontWeight.w800,
-              height: 1.15,
-              letterSpacing: -1,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            isSignUp
-                ? 'Découvrez des milliers de produits,\ndes offres exclusives et bien plus.'
-                : 'Connectez-vous pour retrouver vos\ncommandes, favoris et promotions.',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.55),
-              fontSize: 16,
-              height: 1.6,
-            ),
-          ),
-          const SizedBox(height: 40),
-
-          // ── Feature pills ─────────────────────
-          ...[
-            ('🚀', 'Livraison rapide à Djibouti'),
-            ('🔒', 'Paiement sécurisé'),
-            ('🎁', 'Offres exclusives membres'),
-          ].map((e) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(children: [
-                  Text(e.$1, style: const TextStyle(fontSize: 18)),
-                  const SizedBox(width: 12),
-                  Text(e.$2,
-                      style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                          fontSize: 15)),
-                ]),
-              )),
-
-          const Spacer(),
-
-          // ── Switch mode CTA ───────────────────
-          Row(children: [
-            Text(
-              isSignUp
-                  ? 'Déjà un compte ? '
-                  : 'Pas encore inscrit ? ',
-              style: TextStyle(
-                  color: Colors.white.withOpacity(0.45), fontSize: 14),
-            ),
-            GestureDetector(
-              onTap: onSwitchTap,
-              child: Text(
-                isSignUp ? 'Se connecter' : 'Créer un compte',
-                style: TextStyle(
-                  color: Colors.cyanAccent.shade200,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.underline,
-                  decorationColor: Colors.cyanAccent.shade200,
-                ),
-              ),
-            ),
-          ]),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-//  SIGN IN FORM
-// ─────────────────────────────────────────────
-class _SignInForm extends StatefulWidget {
-  final VoidCallback onSwitch;
-  const _SignInForm({required this.onSwitch});
-
-  @override
-  State<_SignInForm> createState() => _SignInFormState();
-}
-
-class _SignInFormState extends State<_SignInForm> {
-  bool _obscure = true;
-
-  @override
-  Widget build(BuildContext context) {
-    return _FormCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _FormTitle('Se connecter'),
-          const SizedBox(height: 6),
-          _FormSubtitle('Accédez à votre espace personnel'),
           const SizedBox(height: 32),
-
-          // ── Social buttons ────────────────────
-          _SocialButtons(),
-          const SizedBox(height: 28),
-          _Divider(),
-          const SizedBox(height: 28),
-
-          // ── Email ─────────────────────────────
-          _Label('Email'),
-          const SizedBox(height: 8),
-          _AuthField(
-            hint: 'votre@email.com',
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 20),
-
-          // ── Password ──────────────────────────
-          _Label('Mot de passe'),
-          const SizedBox(height: 8),
-          _AuthField(
-            hint: '••••••••',
-            icon: Icons.lock_outline,
-            obscureText: _obscure,
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscure ? Icons.visibility_off : Icons.visibility,
-                color: Colors.white38,
-                size: 18,
-              ),
-              onPressed: () => setState(() => _obscure = !_obscure),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // ── Remember + Forgot ─────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _CheckboxRow(label: 'Se souvenir de moi'),
-              GestureDetector(
-                onTap: () {},
-                child: Text(
-                  'Mot de passe oublié ?',
-                  style: TextStyle(
-                      color: Colors.cyanAccent.shade200, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-
-          // ── Submit ────────────────────────────
-          _PrimaryButton(label: 'Se connecter', onTap: () {}),
-          const SizedBox(height: 24),
-
-          // ── Switch ────────────────────────────
-          Center(
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Text('Pas de compte ? ',
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.4), fontSize: 14)),
-              GestureDetector(
-                onTap: widget.onSwitch,
-                child: Text(
-                  "S'inscrire",
-                  style: TextStyle(
-                    color: Colors.cyanAccent.shade200,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ]),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-//  SIGN UP FORM
-// ─────────────────────────────────────────────
-class _SignUpForm extends StatefulWidget {
-  final VoidCallback onSwitch;
-  const _SignUpForm({required this.onSwitch});
-
-  @override
-  State<_SignUpForm> createState() => _SignUpFormState();
-}
-
-class _SignUpFormState extends State<_SignUpForm> {
-  bool _obscure = true;
-  bool _obscureConfirm = true;
-
-  @override
-  Widget build(BuildContext context) {
-    return _FormCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _FormTitle('Créer un compte'),
-          const SizedBox(height: 6),
-          _FormSubtitle('Rejoignez DJIBSOUQ gratuitement'),
-          const SizedBox(height: 32),
-
-          // ── Social buttons ────────────────────
-          _SocialButtons(),
-          const SizedBox(height: 28),
-          _Divider(),
-          const SizedBox(height: 28),
-
-          // ── Name row ──────────────────────────
-          Row(children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _Label('Prénom'),
-                  const SizedBox(height: 8),
-                  _AuthField(hint: 'Ahmed', icon: Icons.person_outline),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _Label('Nom'),
-                  const SizedBox(height: 8),
-                  _AuthField(hint: 'Omar', icon: Icons.person_outline),
-                ],
-              ),
-            ),
-          ]),
-          const SizedBox(height: 20),
-
-          // ── Email ─────────────────────────────
-          _Label('Email'),
-          const SizedBox(height: 8),
-          _AuthField(
-            hint: 'votre@email.com',
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 20),
-
-          // ── Phone ─────────────────────────────
-          _Label('Téléphone (optionnel)'),
-          const SizedBox(height: 8),
-          _AuthField(
-            hint: '+253 77 00 00 00',
-            icon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-          ),
-          const SizedBox(height: 20),
-
-          // ── Password ──────────────────────────
-          _Label('Mot de passe'),
-          const SizedBox(height: 8),
-          _AuthField(
-            hint: '8 caractères minimum',
-            icon: Icons.lock_outline,
-            obscureText: _obscure,
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscure ? Icons.visibility_off : Icons.visibility,
-                color: Colors.white38,
-                size: 18,
-              ),
-              onPressed: () => setState(() => _obscure = !_obscure),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // ── Confirm password ──────────────────
-          _Label('Confirmer le mot de passe'),
-          const SizedBox(height: 8),
-          _AuthField(
-            hint: '••••••••',
-            icon: Icons.lock_outline,
-            obscureText: _obscureConfirm,
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscureConfirm ? Icons.visibility_off : Icons.visibility,
-                color: Colors.white38,
-                size: 18,
-              ),
-              onPressed: () =>
-                  setState(() => _obscureConfirm = !_obscureConfirm),
-            ),
+          _GradientButton(
+            label: 'S\'inscrire',
+            icon: Icons.arrow_forward_rounded,
+            colors: const [_kCyan, _kBlue],
+            onPressed: _agreedToTerms ? () {} : null,
           ),
           const SizedBox(height: 16),
-
-          // ── Terms ─────────────────────────────
-          _CheckboxRow(
-              label: "J'accepte les conditions d'utilisation"),
-          const SizedBox(height: 32),
-
-          // ── Submit ────────────────────────────
-          _PrimaryButton(label: "Créer mon compte", onTap: () {}),
-          const SizedBox(height: 24),
-
-          // ── Switch ────────────────────────────
-          Center(
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Text('Déjà un compte ? ',
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.4), fontSize: 14)),
-              GestureDetector(
-                onTap: widget.onSwitch,
-                child: Text(
-                  "Se connecter",
-                  style: TextStyle(
-                    color: Colors.cyanAccent.shade200,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ]),
-          ),
         ],
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────
-//  SOCIAL BUTTONS
-// ─────────────────────────────────────────────
-class _SocialButtons extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final narrow = constraints.maxWidth < 380;
-      if (narrow) {
-        return Column(
-          children: [
-            _SocialBtn(
-                label: 'Google',
-                icon: Icons.g_mobiledata,
-                color: const Color(0xFFEA4335)),
-            const SizedBox(height: 10),
-            _SocialBtn(
-                label: 'Facebook',
-                icon: Icons.facebook,
-                color: const Color(0xFF1877F2)),
-            const SizedBox(height: 10),
-            _SocialBtn(
-                label: 'Apple',
-                icon: Icons.apple,
-                color: Colors.white),
-            const SizedBox(height: 10),
-            _SocialBtn(
-                label: 'WhatsApp',
-                icon: Icons.chat,
-                color: const Color(0xFF25D366)),
-          ],
-        );
-      }
-      return Column(children: [
-        Row(children: [
-          Expanded(
-            child: _SocialBtn(
-                label: 'Google',
-                icon: Icons.g_mobiledata,
-                color: const Color(0xFFEA4335)),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _SocialBtn(
-                label: 'Facebook',
-                icon: Icons.facebook,
-                color: const Color(0xFF1877F2)),
-          ),
-        ]),
-        const SizedBox(height: 10),
-        Row(children: [
-          Expanded(
-            child: _SocialBtn(
-                label: 'Apple',
-                icon: Icons.apple,
-                color: Colors.white),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _SocialBtn(
-                label: 'WhatsApp',
-                icon: Icons.chat,
-                color: const Color(0xFF25D366)),
-          ),
-        ]),
-      ]);
-    });
-  }
-}
+// ══════════════════════════════════════════════════════════════════════════════
+//  COMPOSANTS BRANDING
+// ══════════════════════════════════════════════════════════════════════════════
 
-class _SocialBtn extends StatefulWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  const _SocialBtn(
-      {required this.label, required this.icon, required this.color});
-
-  @override
-  State<_SocialBtn> createState() => _SocialBtnState();
-}
-
-class _SocialBtnState extends State<_SocialBtn> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: () {},
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding:
-              const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-          decoration: BoxDecoration(
-            color: _hovered
-                ? widget.color.withOpacity(0.15)
-                : Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: _hovered
-                  ? widget.color.withOpacity(0.6)
-                  : Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(widget.icon, color: widget.color, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                widget.label,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.85),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-//  SHARED SMALL WIDGETS
-// ─────────────────────────────────────────────
-
-class _FormCard extends StatelessWidget {
-  final Widget child;
-  const _FormCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 460,
-      padding: const EdgeInsets.all(36),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0D1526).withOpacity(0.9),
-        borderRadius: BorderRadius.circular(28),
-        border:
-            Border.all(color: Colors.white.withOpacity(0.08), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            blurRadius: 60,
-            offset: const Offset(0, 20),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-class _FormTitle extends StatelessWidget {
-  final String text;
-  const _FormTitle(this.text);
-
-  @override
-  Widget build(BuildContext context) => Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 26,
-          fontWeight: FontWeight.w800,
-          letterSpacing: -0.5,
-        ),
-      );
-}
-
-class _FormSubtitle extends StatelessWidget {
-  final String text;
-  const _FormSubtitle(this.text);
-
-  @override
-  Widget build(BuildContext context) => Text(
-        text,
-        style: TextStyle(
-            color: Colors.white.withOpacity(0.4), fontSize: 14),
-      );
-}
-
-class _Label extends StatelessWidget {
-  final String text;
-  const _Label(this.text);
-
-  @override
-  Widget build(BuildContext context) => Text(
-        text,
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.65),
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.3,
-        ),
-      );
-}
-
-class _AuthField extends StatefulWidget {
-  final String hint;
-  final IconData icon;
-  final bool obscureText;
-  final TextInputType? keyboardType;
-  final Widget? suffixIcon;
-
-  const _AuthField({
-    required this.hint,
-    required this.icon,
-    this.obscureText = false,
-    this.keyboardType,
-    this.suffixIcon,
-  });
-
-  @override
-  State<_AuthField> createState() => _AuthFieldState();
-}
-
-class _AuthFieldState extends State<_AuthField> {
-  bool _focused = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Focus(
-      onFocusChange: (f) => setState(() => _focused = f),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: _focused
-                ? Colors.cyanAccent.shade200.withOpacity(0.7)
-                : Colors.white.withOpacity(0.1),
-            width: _focused ? 1.5 : 1,
-          ),
-          color: Colors.white.withOpacity(_focused ? 0.07 : 0.04),
-        ),
-        child: TextField(
-          obscureText: widget.obscureText,
-          keyboardType: widget.keyboardType,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
-          decoration: InputDecoration(
-            hintText: widget.hint,
-            hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.25), fontSize: 14),
-            prefixIcon:
-                Icon(widget.icon, color: Colors.white38, size: 18),
-            suffixIcon: widget.suffixIcon,
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(
-                vertical: 16, horizontal: 16),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PrimaryButton extends StatefulWidget {
-  final String label;
-  final VoidCallback onTap;
-  const _PrimaryButton({required this.label, required this.onTap});
-
-  @override
-  State<_PrimaryButton> createState() => _PrimaryButtonState();
-}
-
-class _PrimaryButtonState extends State<_PrimaryButton> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: _hovered
-                  ? [
-                      const Color(0xFF2563EB),
-                      const Color(0xFF1E3A8A),
-                    ]
-                  : [
-                      primaryBlue,
-                      const Color(0xFF1E40AF),
-                    ],
-            ),
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: primaryBlue.withOpacity(_hovered ? 0.55 : 0.3),
-                blurRadius: _hovered ? 24 : 14,
-                offset: const Offset(0, 6),
-              )
-            ],
-          ),
-          child: Center(
-            child: Text(
-              widget.label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CheckboxRow extends StatefulWidget {
-  final String label;
-  const _CheckboxRow({required this.label});
-
-  @override
-  State<_CheckboxRow> createState() => _CheckboxRowState();
-}
-
-class _CheckboxRowState extends State<_CheckboxRow> {
-  bool _checked = false;
-
+class _Logo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
-          onTap: () => setState(() => _checked = !_checked),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              color: _checked ? primaryBlue : Colors.transparent,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: _checked
-                    ? primaryBlue
-                    : Colors.white.withOpacity(0.25),
-                width: 1.5,
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(colors: [_kBlue, _kCyan]),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: _kCyan.withOpacity(0.4),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
               ),
-            ),
-            child: _checked
-                ? const Icon(Icons.check, color: Colors.white, size: 12)
-                : null,
+            ],
+          ),
+          child: const Icon(
+            Icons.shopping_bag_rounded,
+            color: _kWhite,
+            size: 26,
           ),
         ),
-        const SizedBox(width: 10),
-        Flexible(
-          child: Text(
-            widget.label,
-            style: TextStyle(
-                color: Colors.white.withOpacity(0.5), fontSize: 13),
+        const SizedBox(width: 14),
+        const Text(
+          'DJIBSOUQ',
+          style: TextStyle(
+            color: _kNavy, // ← Changé pour un bleu très foncé bien visible
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2.8,
           ),
         ),
       ],
@@ -1008,80 +635,604 @@ class _CheckboxRowState extends State<_CheckboxRow> {
   }
 }
 
-class _Divider extends StatelessWidget {
+class _BrandHeadline extends StatelessWidget {
+  final bool isSignUp;
+  const _BrandHeadline({required this.isSignUp});
+
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Expanded(
-          child: Divider(
-              color: Colors.white.withOpacity(0.1), thickness: 1)),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        child: Text(
-          'ou continuer avec',
-          style: TextStyle(
-              color: Colors.white.withOpacity(0.3), fontSize: 12),
-        ),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      child: Column(
+        key: ValueKey(isSignUp),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isSignUp
+                ? 'Rejoignez\nla communauté\nDjiboutienne.'
+                : 'Content de\nvous revoir\nchez nous.',
+            style: TextStyle(
+              color: _kNavy, // ← Texte bien visible
+              fontSize: 44,
+              fontWeight: FontWeight.w800,
+              height: 1.08,
+              letterSpacing: -2,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            height: 4,
+            width: 68,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [_kCyan, _kGold]),
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+        ],
       ),
-      Expanded(
-          child: Divider(
-              color: Colors.white.withOpacity(0.1), thickness: 1)),
-    ]);
+    );
   }
 }
 
-// ─────────────────────────────────────────────
-//  GLOW BLOB
-// ─────────────────────────────────────────────
-class _GlowBlob extends StatelessWidget {
-  final Color color;
-  final double size;
-  const _GlowBlob({required this.color, required this.size});
+class _FeatureList extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    const items = [
+      ('🚀', 'Livraison rapide partout à Djibouti'),
+      ('🔒', 'Paiement 100% sécurisé'),
+      ('🎁', 'Offres exclusives membres'),
+      ('⭐', '+10 000 produits disponibles'),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: items
+          .map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Text(item.$1, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 12),
+                  Text(
+                    item.$2,
+                    style: TextStyle(
+                      color: _kWhite.withOpacity(0.72),
+                      fontSize: 14.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _PanelToggleBtn extends StatelessWidget {
+  final bool isSignUp;
+  final VoidCallback onTap;
+  const _PanelToggleBtn({required this.isSignUp, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.red,
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [color, Colors.transparent],
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 350),
+        child: Container(
+          key: ValueKey(isSignUp),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          decoration: BoxDecoration(
+            color: _kWhite.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _kWhite.withOpacity(0.2)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isSignUp ? Icons.login_rounded : Icons.person_add_alt_1_rounded,
+                color: _kCyan,
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                isSignUp
+                    ? 'Déjà un compte ? Se connecter'
+                    : "Pas de compte ? S'inscrire",
+                style: const TextStyle(
+                  color: _kWhite,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.arrow_forward_rounded, color: _kWhite, size: 16),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────
-//  STARS PAINTER
-// ─────────────────────────────────────────────
-class _StarsPainter extends CustomPainter {
-  final double progress;
-  final List<Offset> stars;
-  final List<double> sizes;
-  final List<double> opacities;
+// ══════════════════════════════════════════════════════════════════════════════
+//  COMPOSANTS FORMULAIRE
+// ══════════════════════════════════════════════════════════════════════════════
 
-  const _StarsPainter({
-    required this.progress,
-    required this.stars,
-    required this.sizes,
-    required this.opacities,
+class _ModePill extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _ModePill({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withOpacity(0.25)),
+      ),
+      child: Text(
+        label.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+class _SocialGrid extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _SocialChip(
+          label: 'Google',
+          icon: Icons.g_mobiledata_outlined,
+          color: const Color(0xFFEA4335),
+        ),
+        const SizedBox(width: 8),
+        _SocialChip(
+          label: 'Facebook',
+          icon: Icons.facebook_rounded,
+          color: const Color(0xFF1877F2),
+        ),
+        const SizedBox(width: 8),
+        _SocialChip(label: 'Apple', icon: Icons.apple_rounded, color: _kText),
+      ],
+    );
+  }
+}
+
+class _SocialChip extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  const _SocialChip({
+    required this.label,
+    required this.icon,
+    required this.color,
   });
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-    for (int i = 0; i < stars.length; i++) {
-      final x = stars[i].dx * size.width;
-      final y = (stars[i].dy * size.height + progress * 100) % size.height;
-      paint.color = Colors.white.withOpacity(opacities[i]);
-      canvas.drawCircle(Offset(x, y), sizes[i], paint);
-    }
+  State<_SocialChip> createState() => _SocialChipState();
+}
+
+class _SocialChipState extends State<_SocialChip>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+    );
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
   }
 
   @override
-  bool shouldRepaint(covariant _StarsPainter old) =>
-      old.progress != progress;
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: MouseRegion(
+        onEnter: (_) => _ctrl.forward(),
+        onExit: (_) => _ctrl.reverse(),
+        child: GestureDetector(
+          onTapDown: (_) => _ctrl.forward(),
+          onTapUp: (_) => _ctrl.reverse(),
+          onTapCancel: () => _ctrl.reverse(),
+          onTap: () {},
+          child: AnimatedBuilder(
+            animation: _anim,
+            builder: (context, child) => Transform.scale(
+              scale: 1.0 + _anim.value * 0.03,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                decoration: BoxDecoration(
+                  color: Color.lerp(
+                    _kBg,
+                    widget.color.withOpacity(0.06),
+                    _anim.value,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Color.lerp(
+                      _kBorder,
+                      widget.color.withOpacity(0.4),
+                      _anim.value,
+                    )!,
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.color.withOpacity(0.1 * _anim.value),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(widget.icon, color: widget.color, size: 22),
+                    const SizedBox(height: 3),
+                    Text(
+                      widget.label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color.lerp(_kMuted, _kText, _anim.value),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassField extends StatelessWidget {
+  final String hint;
+  final IconData icon;
+  final bool obscure;
+  final Widget? trailing;
+
+  const _GlassField({
+    required this.hint,
+    required this.icon,
+    this.obscure = false,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      obscureText: obscure,
+      style: const TextStyle(
+        fontSize: 14,
+        color: _kText,
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: _kMuted, fontSize: 13.5),
+        prefixIcon: Icon(icon, size: 18, color: _kMuted),
+        suffixIcon: trailing,
+        filled: true,
+        fillColor: _kBg,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 15,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _kBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _kBorder, width: 1.2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _kIndigo, width: 1.8),
+        ),
+      ),
+    );
+  }
+}
+
+// Bouton dégradé principal avec animation de pression
+class _GradientButton extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final List<Color> colors;
+  final VoidCallback? onPressed;
+
+  const _GradientButton({
+    required this.label,
+    required this.icon,
+    required this.colors,
+    this.onPressed,
+  });
+
+  @override
+  State<_GradientButton> createState() => _GradientButtonState();
+}
+
+class _GradientButtonState extends State<_GradientButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+      lowerBound: 0.96,
+      upperBound: 1.0,
+      value: 1.0,
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = widget.onPressed != null;
+    return GestureDetector(
+      onTapDown: enabled ? (_) => _ctrl.reverse() : null,
+      onTapUp: enabled ? (_) => _ctrl.forward() : null,
+      onTapCancel: () => _ctrl.forward(),
+      onTap: widget.onPressed,
+      child: ScaleTransition(
+        scale: _ctrl,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          height: 54,
+          decoration: BoxDecoration(
+            gradient: enabled
+                ? LinearGradient(
+                    colors: widget.colors,
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  )
+                : null,
+            color: enabled ? null : const Color(0xFFE2E8F0),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: widget.colors.first.withOpacity(0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : [],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                widget.label,
+                style: TextStyle(
+                  color: enabled ? _kWhite : _kMuted,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(widget.icon, color: enabled ? _kWhite : _kMuted, size: 17),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Bouton outline secondaire avec animation de pression
+class _OutlineButton extends StatefulWidget {
+  final String label;
+  final VoidCallback onPressed;
+  const _OutlineButton({required this.label, required this.onPressed});
+
+  @override
+  State<_OutlineButton> createState() => _OutlineButtonState();
+}
+
+class _OutlineButtonState extends State<_OutlineButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 160),
+      lowerBound: 0.97,
+      upperBound: 1.0,
+      value: 1.0,
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _ctrl.reverse(),
+      onTapUp: (_) => _ctrl.forward(),
+      onTapCancel: () => _ctrl.forward(),
+      onTap: widget.onPressed,
+      child: ScaleTransition(
+        scale: _ctrl,
+        child: Container(
+          height: 50,
+          decoration: BoxDecoration(
+            color: _kBg,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _kBorder, width: 1.5),
+          ),
+          child: Center(
+            child: Text(
+              widget.label,
+              style: const TextStyle(
+                color: _kText,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OrLine extends StatelessWidget {
+  const _OrLine();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Container(height: 1, color: _kBorder)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Text(
+            'ou',
+            style: TextStyle(
+              fontSize: 12,
+              color: _kMuted.withOpacity(0.7),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Expanded(child: Container(height: 1, color: _kBorder)),
+      ],
+    );
+  }
+}
+
+class _EyeToggle extends StatelessWidget {
+  final bool obscure;
+  final VoidCallback onTap;
+  const _EyeToggle({required this.obscure, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: Icon(
+          obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+          key: ValueKey(obscure),
+          color: _kMuted,
+          size: 18,
+        ),
+      ),
+      onPressed: onTap,
+    );
+  }
+}
+
+class _MiniCheck extends StatefulWidget {
+  final String label;
+  const _MiniCheck({required this.label});
+
+  @override
+  State<_MiniCheck> createState() => _MiniCheckState();
+}
+
+class _MiniCheckState extends State<_MiniCheck> {
+  bool _checked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => setState(() => _checked = !_checked),
+      child: Row(
+        children: [
+          _AnimCheck(checked: _checked),
+          const SizedBox(width: 8),
+          Text(
+            widget.label,
+            style: const TextStyle(fontSize: 12.5, color: _kMuted),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnimCheck extends StatelessWidget {
+  final bool checked;
+  const _AnimCheck({required this.checked});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutBack,
+      width: 20,
+      height: 20,
+      decoration: BoxDecoration(
+        gradient: checked
+            ? const LinearGradient(
+                colors: [_kBlue, _kIndigo],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: checked ? null : _kWhite,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: checked ? Colors.transparent : _kBorder,
+          width: 1.5,
+        ),
+        boxShadow: checked
+            ? [
+                BoxShadow(
+                  color: _kIndigo.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : [],
+      ),
+      child: checked
+          ? const Icon(Icons.check_rounded, size: 13, color: _kWhite)
+          : null,
+    );
+  }
 }

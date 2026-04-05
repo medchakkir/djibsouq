@@ -7,6 +7,10 @@ const Color lightGrey = Color(0xFFF3F4F6);
 const Color cardGrey = Color(0xFFFFFFFF);
 const Color textDark = Color(0xFF111827);
 
+// Breakpoints
+const double mobileBreakpoint = 700;
+const double tabletBreakpoint = 1024;
+
 // ─────────────────────────────────────────────
 //  PROFILE PAGE
 // ─────────────────────────────────────────────
@@ -38,28 +42,42 @@ class _ProfileWebState extends State<ProfileWeb> {
   //  PROFILE CONTENT
   // ─────────────────────────────────────────────
   Widget _buildProfileContent() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
-      child: Column(
-        children: [
-          _buildProfileHeader(),
-          const SizedBox(height: 30),
-          _buildStatsRow(),
-          const SizedBox(height: 30),
-          _buildProfileSections(),
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double width = constraints.maxWidth;
+        final bool isMobile = width < mobileBreakpoint;
+        final bool isTablet = width < tabletBreakpoint;
+
+        final double horizontalPadding = isMobile ? 20 : (isTablet ? 40 : 60);
+        final double verticalPadding = isMobile ? 24 : 40;
+
+        return Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: verticalPadding,
+          ),
+          child: Column(
+            children: [
+              _buildProfileHeader(isMobile: isMobile),
+              const SizedBox(height: 30),
+              _buildStatsRow(isMobile: isMobile),
+              const SizedBox(height: 30),
+              _buildProfileSections(isMobile: isMobile),
+            ],
+          ),
+        );
+      },
     );
   }
 
   // ─────────────────────────────────────────────
-  //  PROFILE HEADER
+  //  PROFILE HEADER – Responsive
   // ─────────────────────────────────────────────
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader({required bool isMobile}) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(isMobile ? 16 : 20),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -75,135 +93,211 @@ class _ProfileWebState extends State<ProfileWeb> {
       ),
       child: Stack(
         children: [
-          Positioned(
-            right: -30,
-            top: -30,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.04),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 60,
-            bottom: -50,
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.04),
-              ),
-            ),
-          ),
+          if (!isMobile) ...[
+            Positioned(right: -30, top: -30, child: _decorativeCircle(200)),
+            Positioned(right: 60, bottom: -50, child: _decorativeCircle(150)),
+          ],
           Padding(
-            padding: const EdgeInsets.all(40),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
-                  ),
-                  child: CircleAvatar(
-                    radius: 56,
-                    backgroundColor: Colors.white.withOpacity(0.12),
-                    child: const Icon(Icons.person, size: 64, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 36),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            padding: EdgeInsets.all(isMobile ? 24 : 40),
+            child: isMobile
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Row(
-                        children: [
-                          const Text(
-                            'Marwan User',
-                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.greenAccent.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.greenAccent.withOpacity(0.5)),
-                            ),
-                            child: const Text(
-                              'Vérifié',
-                              style: TextStyle(fontSize: 12, color: Colors.greenAccent, fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(Icons.email_outlined, size: 16, color: Colors.white.withOpacity(0.6)),
-                          const SizedBox(width: 6),
-                          Text('mymail@gmail.com',
-                              style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.7))),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on_outlined, size: 16, color: Colors.white.withOpacity(0.6)),
-                          const SizedBox(width: 6),
-                          Text('Djibouti, DJ',
-                              style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.7))),
-                        ],
-                      ),
+                      _buildAvatar(isMobile: true),
+                      const SizedBox(height: 20),
+                      _buildUserInfo(isMobile: true),
                       const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: primaryBlue,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              elevation: 0,
-                            ),
-                            onPressed: _showEditProfileDialog,
-                            icon: const Icon(Icons.edit_outlined, size: 18),
-                            label: const Text('Éditer le profil',
-                                style: TextStyle(fontWeight: FontWeight.w600)),
-                          ),
-                          const SizedBox(width: 12),
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: BorderSide(color: Colors.white.withOpacity(0.4)),
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                            onPressed: _shareProfile,
-                            icon: const Icon(Icons.share_outlined, size: 18),
-                            label: const Text('Partager'),
-                          ),
-                        ],
-                      ),
+                      _buildActionButtons(isMobile: true),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      _buildAvatar(isMobile: false),
+                      const SizedBox(width: 36),
+                      Expanded(child: _buildUserInfo(isMobile: false)),
                     ],
                   ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
     );
   }
 
+  Widget _decorativeCircle(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(0.04),
+      ),
+    );
+  }
+
+  Widget _buildAvatar({required bool isMobile}) {
+    final double radius = isMobile ? 48 : 56;
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+      ),
+      child: CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.white.withOpacity(0.12),
+        child: const Icon(Icons.person, size: 64, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildUserInfo({required bool isMobile}) {
+    return Column(
+      crossAxisAlignment: isMobile
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: isMobile
+              ? MainAxisAlignment.center
+              : MainAxisAlignment.start,
+          children: [
+            const Text(
+              'Marwan User',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.greenAccent.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.greenAccent.withOpacity(0.5)),
+              ),
+              child: const Text(
+                'Vérifié',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.greenAccent,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        _infoRow(Icons.email_outlined, 'mymail@gmail.com', isMobile),
+        const SizedBox(height: 6),
+        _infoRow(Icons.location_on_outlined, 'Djibouti, DJ', isMobile),
+        if (!isMobile) ...[
+          const SizedBox(height: 24),
+          _buildActionButtons(isMobile: isMobile),
+        ],
+      ],
+    );
+  }
+
+  Widget _infoRow(IconData icon, String text, bool isMobile) {
+    return Row(
+      mainAxisAlignment: isMobile
+          ? MainAxisAlignment.center
+          : MainAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: Colors.white.withOpacity(0.6)),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.7)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons({required bool isMobile}) {
+    return isMobile
+        ? Column(
+            children: [
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: primaryBlue,
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _showEditProfileDialog,
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: const Text(
+                  'Éditer le profil',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: Colors.white.withOpacity(0.4)),
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _shareProfile,
+                icon: const Icon(Icons.share_outlined, size: 18),
+                label: const Text('Partager'),
+              ),
+            ],
+          )
+        : Row(
+            children: [
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: primaryBlue,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _showEditProfileDialog,
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: const Text(
+                  'Éditer le profil',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(width: 12),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: Colors.white.withOpacity(0.4)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _shareProfile,
+                icon: const Icon(Icons.share_outlined, size: 18),
+                label: const Text('Partager'),
+              ),
+            ],
+          );
+  }
+
   // ─────────────────────────────────────────────
   //  STATS ROW
   // ─────────────────────────────────────────────
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow({required bool isMobile}) {
     final stats = [
       _StatItem(
         icon: Icons.shopping_bag_outlined,
@@ -231,109 +325,171 @@ class _ProfileWebState extends State<ProfileWeb> {
       ),
     ];
 
-    return Row(
-      children: stats
-          .map((s) => Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: _TappableCard(
-                    onTap: s.onTap,
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: primaryBlue.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(12),
+    return isMobile
+        ? Column(
+            children: stats
+                .map(
+                  (s) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _TappableCard(
+                      onTap: s.onTap,
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: primaryBlue.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(s.icon, color: primaryBlue, size: 22),
                           ),
-                          child: Icon(s.icon, color: primaryBlue, size: 22),
-                        ),
-                        const SizedBox(width: 14),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(s.value,
+                          const SizedBox(width: 14),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                s.value,
                                 style: const TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold, color: textDark)),
-                            Text(s.label,
-                                style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
-                          ],
-                        ),
-                      ],
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: textDark,
+                                ),
+                              ),
+                              Text(
+                                s.label,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ))
-          .toList(),
-    );
+                )
+                .toList(),
+          )
+        : Row(
+            children: stats
+                .map(
+                  (s) => Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: _TappableCard(
+                        onTap: s.onTap,
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: primaryBlue.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(s.icon, color: primaryBlue, size: 22),
+                            ),
+                            const SizedBox(width: 14),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  s.value,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: textDark,
+                                  ),
+                                ),
+                                Text(
+                                  s.label,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
+          );
   }
 
   // ─────────────────────────────────────────────
   //  PROFILE SECTIONS
   // ─────────────────────────────────────────────
-  Widget _buildProfileSections() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: _buildSection('Mon Compte', [
-            _MenuItem(
-              icon: Icons.shopping_bag_outlined,
-              title: 'Mes commandes',
-              subtitle: 'Suivi & historique',
-              onTap: () => Navigator.pushNamed(context, AppRoutes.products),
-            ),
-            _MenuItem(
-              icon: Icons.location_on_outlined,
-              title: 'Mes adresses',
-              subtitle: 'Livraison',
-              onTap: () => _showComingSoon('Mes adresses'),
-            ),
-            _MenuItem(
-              icon: Icons.payment_outlined,
-              title: 'Paiement',
-              subtitle: 'Cartes & mobile money',
-              onTap: () => _showComingSoon('Paiement'),
-            ),
-            _MenuItem(
-              icon: Icons.favorite_outline,
-              title: 'Favoris',
-              subtitle: 'Produits aimés',
-              onTap: () => Navigator.pushNamed(context, AppRoutes.favorites),
-            ),
-          ]),
-        ),
-        const SizedBox(width: 24),
-        Expanded(
-          child: _buildSection('Paramètres', [
-            _MenuItem(
-              icon: Icons.notifications_outlined,
-              title: 'Notifications',
-              subtitle: 'Alertes & mises à jour',
-              onTap: () => _showComingSoon('Notifications'),
-            ),
-            _MenuItem(
-              icon: Icons.security_outlined,
-              title: 'Sécurité',
-              subtitle: 'Mot de passe & authentification',
-              onTap: () => _showComingSoon('Sécurité'),
-            ),
-            _MenuItem(
-              icon: Icons.language_outlined,
-              title: 'Langue',
-              subtitle: 'Français, English...',
-              onTap: _showLanguageDialog,
-            ),
-            _MenuItem(
-              icon: Icons.help_outline,
-              title: 'Aide',
-              subtitle: 'Support & FAQ',
-              onTap: () => _showComingSoon('Aide'),
-            ),
-          ]),
-        ),
-      ],
-    );
+  Widget _buildProfileSections({required bool isMobile}) {
+    final leftSection = _buildSection('Mon Compte', [
+      _MenuItem(
+        icon: Icons.shopping_bag_outlined,
+        title: 'Mes commandes',
+        subtitle: 'Suivi & historique',
+        onTap: () => Navigator.pushNamed(context, AppRoutes.products),
+      ),
+      _MenuItem(
+        icon: Icons.location_on_outlined,
+        title: 'Mes adresses',
+        subtitle: 'Livraison',
+        onTap: () => _showComingSoon('Mes adresses'),
+      ),
+      _MenuItem(
+        icon: Icons.payment_outlined,
+        title: 'Paiement',
+        subtitle: 'Cartes & mobile money',
+        onTap: () => _showComingSoon('Paiement'),
+      ),
+      _MenuItem(
+        icon: Icons.favorite_outline,
+        title: 'Favoris',
+        subtitle: 'Produits aimés',
+        onTap: () => Navigator.pushNamed(context, AppRoutes.favorites),
+      ),
+    ]);
+
+    final rightSection = _buildSection('Paramètres', [
+      _MenuItem(
+        icon: Icons.notifications_outlined,
+        title: 'Notifications',
+        subtitle: 'Alertes & mises à jour',
+        onTap: () => _showComingSoon('Notifications'),
+      ),
+      _MenuItem(
+        icon: Icons.security_outlined,
+        title: 'Sécurité',
+        subtitle: 'Mot de passe & authentification',
+        onTap: () => _showComingSoon('Sécurité'),
+      ),
+      _MenuItem(
+        icon: Icons.language_outlined,
+        title: 'Langue',
+        subtitle: 'Français, English...',
+        onTap: _showLanguageDialog,
+      ),
+      _MenuItem(
+        icon: Icons.help_outline,
+        title: 'Aide',
+        subtitle: 'Support & FAQ',
+        onTap: () => _showComingSoon('Aide'),
+      ),
+    ]);
+
+    return isMobile
+        ? Column(
+            children: [leftSection, const SizedBox(height: 24), rightSection],
+          )
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: leftSection),
+              const SizedBox(width: 24),
+              Expanded(child: rightSection),
+            ],
+          );
   }
 
   Widget _buildSection(String title, List<_MenuItem> items) {
@@ -349,15 +505,23 @@ class _ProfileWebState extends State<ProfileWeb> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: textDark)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: textDark,
+            ),
+          ),
           const SizedBox(height: 16),
-          ...items.map((item) => _HoverMenuTile(
-                icon: item.icon,
-                title: item.title,
-                subtitle: item.subtitle,
-                onTap: item.onTap,
-              )),
+          ...items.map(
+            (item) => _HoverMenuTile(
+              icon: item.icon,
+              title: item.title,
+              subtitle: item.subtitle,
+              onTap: item.onTap,
+            ),
+          ),
         ],
       ),
     );
@@ -396,31 +560,60 @@ class _ProfileWebState extends State<ProfileWeb> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Éditer le profil',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textDark)),
+                const Text(
+                  'Éditer le profil',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: textDark,
+                  ),
+                ),
                 const SizedBox(height: 24),
-                _editField(label: 'Nom', hint: 'Marwan User', icon: Icons.person_outline),
+                _editField(
+                  label: 'Nom',
+                  hint: 'Marwan User',
+                  icon: Icons.person_outline,
+                ),
                 const SizedBox(height: 16),
-                _editField(label: 'Email', hint: 'mymail@gmail.com', icon: Icons.email_outlined),
+                _editField(
+                  label: 'Email',
+                  hint: 'mymail@gmail.com',
+                  icon: Icons.email_outlined,
+                ),
                 const SizedBox(height: 16),
-                _editField(label: 'Ville', hint: 'Djibouti, DJ', icon: Icons.location_on_outlined),
+                _editField(
+                  label: 'Ville',
+                  hint: 'Djibouti, DJ',
+                  icon: Icons.location_on_outlined,
+                ),
                 const SizedBox(height: 28),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuler', style: TextStyle(color: Colors.grey)),
+                      child: const Text(
+                        'Annuler',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryBlue,
-                        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 28,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Sauvegarder', style: TextStyle(color: Colors.white)),
+                      child: const Text(
+                        'Sauvegarder',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -432,12 +625,22 @@ class _ProfileWebState extends State<ProfileWeb> {
     );
   }
 
-  Widget _editField({required String label, required String hint, required IconData icon}) {
+  Widget _editField({
+    required String label,
+    required String hint,
+    required IconData icon,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textDark)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: textDark,
+          ),
+        ),
         const SizedBox(height: 6),
         TextField(
           decoration: InputDecoration(
@@ -449,7 +652,10 @@ class _ProfileWebState extends State<ProfileWeb> {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
           ),
         ),
       ],
@@ -493,13 +699,21 @@ class _ProfileWebState extends State<ProfileWeb> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Choisir la langue',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textDark)),
+                const Text(
+                  'Choisir la langue',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: textDark,
+                  ),
+                ),
                 const SizedBox(height: 20),
                 ...['🇫🇷  Français', '🇬🇧  English', '🇸🇦  العربية'].map(
                   (lang) => ListTile(
                     title: Text(lang, style: const TextStyle(fontSize: 15)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     hoverColor: primaryBlue.withOpacity(0.06),
                     onTap: () {
                       Navigator.pop(context);
@@ -508,7 +722,9 @@ class _ProfileWebState extends State<ProfileWeb> {
                           content: Text('Langue : $lang'),
                           backgroundColor: primaryBlue,
                           behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           duration: const Duration(seconds: 2),
                         ),
                       );
@@ -545,8 +761,12 @@ class _TappableCardState extends State<_TappableCard> {
     final tappable = widget.onTap != null;
     return MouseRegion(
       cursor: tappable ? SystemMouseCursors.click : MouseCursor.defer,
-      onEnter: (_) { if (tappable) setState(() => _hovered = true); },
-      onExit: (_) { if (tappable) setState(() => _hovered = false); },
+      onEnter: (_) {
+        if (tappable) setState(() => _hovered = true);
+      },
+      onExit: (_) {
+        if (tappable) setState(() => _hovered = false);
+      },
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
@@ -556,7 +776,9 @@ class _TappableCardState extends State<_TappableCard> {
             color: cardGrey,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _hovered ? primaryBlue.withOpacity(0.3) : Colors.transparent,
+              color: _hovered
+                  ? primaryBlue.withOpacity(0.3)
+                  : Colors.transparent,
             ),
             boxShadow: [
               BoxShadow(
@@ -608,7 +830,9 @@ class _HoverMenuTileState extends State<_HoverMenuTile> {
           margin: const EdgeInsets.only(bottom: 4),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
           decoration: BoxDecoration(
-            color: _hovered ? primaryBlue.withOpacity(0.06) : Colors.transparent,
+            color: _hovered
+                ? primaryBlue.withOpacity(0.06)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -617,7 +841,9 @@ class _HoverMenuTileState extends State<_HoverMenuTile> {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _hovered ? primaryBlue.withOpacity(0.15) : primaryBlue.withOpacity(0.07),
+                  color: _hovered
+                      ? primaryBlue.withOpacity(0.15)
+                      : primaryBlue.withOpacity(0.07),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(widget.icon, color: primaryBlue, size: 20),
@@ -636,8 +862,13 @@ class _HoverMenuTileState extends State<_HoverMenuTile> {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(widget.subtitle,
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                    Text(
+                      widget.subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                   ],
                 ),
               ),

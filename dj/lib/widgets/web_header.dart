@@ -115,12 +115,21 @@ class _buildHeaderState extends State<buildHeader> {
   @override
   Widget build(BuildContext context) {
     final navItems = ['Home', 'Categories', 'Products', 'Promo'];
-    final isMobile = ResponsiveService.isMobile(context);
+    final deviceType = ResponsiveService.getDeviceType(context);
+    final isMobile = deviceType == DeviceType.mobile;
+    final isTablet = deviceType == DeviceType.tablet;
+
+    // Tailles responsives
+    final horizontalPadding = isMobile ? 16.0 : isTablet ? 32.0 : 60.0;
+    final verticalPadding = isMobile ? 12.0 : 18.0;
+    final logoSize = isMobile ? 32.0 : 40.0;
+    final logoFontSize = isMobile ? 16.0 : 18.0;
+    final iconSpacing = isMobile ? 4.0 : 6.0;
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 20 : 60,
-        vertical: 18,
+        horizontal: horizontalPadding,
+        vertical: verticalPadding,
       ),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -136,19 +145,29 @@ class _buildHeaderState extends State<buildHeader> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // ── LOGO ──
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () => navigateTo(context, const HomepageWeb(), replace: true),
-              child: Row(
-                children: [
-                  Image.asset('assets/images/logo.png', width: 40),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'DJIBSOUQ',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryBlue),
-                  ),
-                ],
+          Flexible(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => navigateTo(context, const HomepageWeb(), replace: true),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset('assets/images/logo.png', width: logoSize, height: logoSize),
+                    SizedBox(width: isMobile ? 6 : 8),
+                    Flexible(
+                      child: Text(
+                        'DJIBSOUQ',
+                        style: TextStyle(
+                          fontSize: logoFontSize,
+                          fontWeight: FontWeight.bold,
+                          color: primaryBlue,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -163,12 +182,13 @@ class _buildHeaderState extends State<buildHeader> {
                           title: title,
                           isSelected: selectedItem == title,
                           onTap: () => _navigate(title),
+                          deviceType: deviceType,
                         ))
                     .toList(),
               ),
             ),
 
-            const SizedBox(width: 30),
+            SizedBox(width: isTablet ? 20 : 30),
           ] else ...[
             // Mobile: Hamburger menu
             IconButton(
@@ -178,49 +198,57 @@ class _buildHeaderState extends State<buildHeader> {
           ],
 
           // ── ICONS ──
-          Row(
-            children: [
-              _HeaderIcon(
-                icon: Icons.search,
-                activeIcon: Icons.search,
-                isActive: false,
-                tooltip: 'Rechercher',
-                onTap: () {},
-              ),
-              const SizedBox(width: 6),
-              _HeaderIcon(
-                icon: Icons.login,
-                activeIcon: Icons.login,
-                isActive: false,
-                tooltip: 'Se connecter',
-                onTap: () => navigateTo(context, const AuthPage()),
-              ),
-              const SizedBox(width: 6),
-              _HeaderIcon(
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                isActive: selectedItem == 'Profil',
-                tooltip: 'Profil',
-                onTap: () => navigateTo(context, const ProfileWeb()),
-              ),
-              const SizedBox(width: 6),
-              _HeaderIcon(
-                icon: Icons.favorite_border,
-                activeIcon: Icons.favorite,
-                isActive: selectedItem == 'Favoris',
-                tooltip: 'Favoris',
-                onTap: () => navigateTo(context, const FavoritesWeb()),
-              ),
-              const SizedBox(width: 6),
-              _HeaderIcon(
-                icon: Icons.shopping_cart_outlined,
-                activeIcon: Icons.shopping_cart,
-                isActive: selectedItem == 'Panier',
-                tooltip: 'Panier',
-                badge: 3,
-                onTap: () => navigateTo(context, const CartWeb()),
-              ),
-            ],
+          Flexible(
+            child: Wrap(
+              spacing: iconSpacing,
+              runSpacing: iconSpacing,
+              alignment: WrapAlignment.end,
+              children: [
+                _HeaderIcon(
+                  icon: Icons.search,
+                  activeIcon: Icons.search,
+                  isActive: false,
+                  tooltip: 'Rechercher',
+                  onTap: () {},
+                  deviceType: deviceType,
+                ),
+                _HeaderIcon(
+                  icon: Icons.login,
+                  activeIcon: Icons.login,
+                  isActive: false,
+                  tooltip: 'Se connecter',
+                  onTap: () => navigateTo(context, const AuthPage()),
+                  deviceType: deviceType,
+                ),
+                if (!isMobile || selectedItem == 'Profil') // Masquer sur mobile sauf si actif
+                  _HeaderIcon(
+                    icon: Icons.person_outline,
+                    activeIcon: Icons.person,
+                    isActive: selectedItem == 'Profil',
+                    tooltip: 'Profil',
+                    onTap: () => navigateTo(context, const ProfileWeb()),
+                    deviceType: deviceType,
+                  ),
+                if (!isMobile || selectedItem == 'Favoris') // Masquer sur mobile sauf si actif
+                  _HeaderIcon(
+                    icon: Icons.favorite_border,
+                    activeIcon: Icons.favorite,
+                    isActive: selectedItem == 'Favoris',
+                    tooltip: 'Favoris',
+                    onTap: () => navigateTo(context, const FavoritesWeb()),
+                    deviceType: deviceType,
+                  ),
+                _HeaderIcon(
+                  icon: Icons.shopping_cart_outlined,
+                  activeIcon: Icons.shopping_cart,
+                  isActive: selectedItem == 'Panier',
+                  tooltip: 'Panier',
+                  badge: 3,
+                  onTap: () => navigateTo(context, const CartWeb()),
+                  deviceType: deviceType,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -238,6 +266,7 @@ class _HeaderIcon extends StatefulWidget {
   final String tooltip;
   final VoidCallback onTap;
   final int? badge;
+  final DeviceType deviceType;
 
   const _HeaderIcon({
     required this.icon,
@@ -246,6 +275,7 @@ class _HeaderIcon extends StatefulWidget {
     required this.tooltip,
     required this.onTap,
     this.badge,
+    required this.deviceType,
   });
 
   @override
@@ -275,6 +305,16 @@ class _HeaderIconState extends State<_HeaderIcon> with SingleTickerProviderState
   @override
   Widget build(BuildContext context) {
     final bool showActive = widget.isActive || _hovered;
+    final isMobile = widget.deviceType == DeviceType.mobile;
+    final isTablet = widget.deviceType == DeviceType.tablet;
+
+    // Tailles responsives
+    final iconSize = widget.isActive
+        ? (isMobile ? 24.0 : isTablet ? 26.0 : 26.0)
+        : (isMobile ? 20.0 : isTablet ? 22.0 : 22.0);
+    final padding = isMobile ? 8.0 : 10.0;
+    final badgeSize = isMobile ? 15.0 : 17.0;
+    final badgeFontSize = isMobile ? 9.0 : 10.0;
 
     return Tooltip(
       message: widget.tooltip,
@@ -298,7 +338,7 @@ class _HeaderIconState extends State<_HeaderIcon> with SingleTickerProviderState
               children: [
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(padding),
                   decoration: BoxDecoration(
                     color: showActive ? primaryBlue.withOpacity(0.08) : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
@@ -308,25 +348,25 @@ class _HeaderIconState extends State<_HeaderIcon> with SingleTickerProviderState
                     child: Icon(
                       showActive ? widget.activeIcon : widget.icon,
                       key: ValueKey(showActive),
-                      size: widget.isActive ? 26 : 22,
+                      size: iconSize,
                       color: showActive ? primaryBlue : Colors.grey.shade600,
                     ),
                   ),
                 ),
                 if (widget.badge != null && widget.badge! > 0)
                   Positioned(
-                    top: 4,
-                    right: 4,
+                    top: isMobile ? 2 : 4,
+                    right: isMobile ? 2 : 4,
                     child: Container(
-                      width: 17,
-                      height: 17,
+                      width: badgeSize,
+                      height: badgeSize,
                       decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle),
                       child: Center(
                         child: Text(
                           '${widget.badge}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: badgeFontSize,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -349,12 +389,14 @@ class NavItemWeb extends StatefulWidget {
   final String title;
   final bool isSelected;
   final VoidCallback onTap;
+  final DeviceType deviceType;
 
   const NavItemWeb({
     super.key,
     required this.title,
     required this.isSelected,
     required this.onTap,
+    required this.deviceType,
   });
 
   @override
@@ -366,6 +408,12 @@ class _NavItemWebState extends State<NavItemWeb> {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = widget.deviceType == DeviceType.tablet;
+
+    // Tailles responsives
+    final horizontalMargin = isTablet ? 10.0 : 15.0;
+    final fontSize = isTablet ? 15.0 : 16.0;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
@@ -374,7 +422,7 @@ class _NavItemWebState extends State<NavItemWeb> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          margin: const EdgeInsets.symmetric(horizontal: 15),
+          margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
           decoration: BoxDecoration(
             border: Border(
@@ -397,7 +445,7 @@ class _NavItemWebState extends State<NavItemWeb> {
                   : _hovered
                       ? primaryBlue.withOpacity(0.8)
                       : textDark,
-              fontSize: 16,
+              fontSize: fontSize,
             ),
             child: Text(widget.title),
           ),
