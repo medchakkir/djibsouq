@@ -15,19 +15,7 @@ const Color textDark = Color(0xFF111827);
 
 // helper to display detail popup
 void openProductPopup(BuildContext context, Product product) {
-  showDialog(
-    context: context,
-    barrierDismissible: true,
-    builder: (context) {
-      return Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 120, vertical: 80),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: DetailProductPopup(product: product),
-      );
-    },
-  );
+  DetailProductPopup.show(context, product: product);
 }
 
 class ElectroniqueCategoryWeb extends StatefulWidget {

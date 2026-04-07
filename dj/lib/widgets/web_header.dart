@@ -88,6 +88,11 @@ class _buildHeaderState extends State<buildHeader> {
       case 'Promo':
         navigateTo(context, const PromoWeb());
         break;
+      case 'Profil':
+        navigateTo(context, const ProfileWeb());
+        break;
+      case 'Favoris':
+        navigateTo(context, const FavoritesWeb());
     }
   }
 
@@ -98,7 +103,7 @@ class _buildHeaderState extends State<buildHeader> {
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: ['Home', 'Categories', 'Products', 'Promo']
+          children: ['Home', 'Categories', 'Products', 'Promo', 'Profil', 'Favoris']
               .map((title) => ListTile(
                     title: Text(title),
                     onTap: () {

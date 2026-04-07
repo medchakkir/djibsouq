@@ -602,22 +602,13 @@ class _Logo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [_kBlue, _kCyan]),
             borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: _kCyan.withOpacity(0.4),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
-              ),
-            ],
           ),
-          child: const Icon(
-            Icons.shopping_bag_rounded,
-            color: _kWhite,
-            size: 26,
+          child: Image.asset(
+            'assets/images/logo.png',
+            width: 100,
           ),
         ),
         const SizedBox(width: 14),
@@ -625,7 +616,7 @@ class _Logo extends StatelessWidget {
           'DJIBSOUQ',
           style: TextStyle(
             color: _kNavy, // ← Changé pour un bleu très foncé bien visible
-            fontSize: 22,
+            fontSize: 30,
             fontWeight: FontWeight.w900,
             letterSpacing: 2.8,
           ),

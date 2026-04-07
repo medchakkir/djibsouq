@@ -13,15 +13,7 @@ class BestSellerCard extends StatelessWidget {
   const BestSellerCard({required this.product});
 
   void _openDetail(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (_) => Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: DetailProductPopup(product: product),
-      ),
-    );
+    DetailProductPopup.show(context, product: product);
   }
 
   @override

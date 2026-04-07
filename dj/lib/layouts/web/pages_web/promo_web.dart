@@ -1,16 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:dj/widgets/web_header.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:dj/widgets/web_header.dart'; // Assure-toi que c'est bien BuildHeader ou ton nom actuel
 import 'package:dj/data/product_repository.dart';
 import 'package:dj/models/product_models.dart';
 import 'package:dj/layouts/web/pages_web/detail_product_popup.dart';
+import 'package:dj/widgets/featured_product_card.dart';
+import 'package:dj/services/responsive_service.dart'; // â† Important
 
 const Color primaryBlue = Color(0xFF1E3A8A);
 const Color lightGrey = Color(0xFFF3F4F6);
 const Color textDark = Color(0xFF111827);
 
-// ─────────────────────────────────────────────
-//  PROMO PAGE
-// ─────────────────────────────────────────────
 class PromoWeb extends StatefulWidget {
   final String? initialCategory;
   const PromoWeb({super.key, this.initialCategory});
@@ -39,32 +38,43 @@ class _PromoWebState extends State<PromoWeb> {
         ...ProductRepository.categories.map((c) => c.name),
       ];
 
-  // ─────────────────────────────────────────────
-  //  BUILD
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  BUILD PRINCIPAL
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   @override
   Widget build(BuildContext context) {
+    final deviceType = ResponsiveService.getDeviceType(context);
+    final isMobile = deviceType == DeviceType.mobile;
+    final isTablet = deviceType == DeviceType.tablet;
+
+    // Tailles responsives
+    final horizontalPadding = isMobile ? 16.0 : isTablet ? 32.0 : 60.0;
+    final verticalPadding = isMobile ? 30.0 : 50.0;
+
     return Scaffold(
       backgroundColor: lightGrey,
       body: Column(
         children: [
-          buildHeader(currentPage: 'Promo'),
+          buildHeader(currentPage: 'Promo'), // ou BuildHeader si c'est le nom de la classe
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 50),
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: verticalPadding,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildHeroBanner(),
-                    const SizedBox(height: 60),
-                    _buildSectionHeader(),
-                    const SizedBox(height: 30),
-                    _buildCategoryFilters(),
+                    _buildHeroBanner(isMobile, isTablet),
                     const SizedBox(height: 50),
+                    _buildSectionHeader(isMobile),
+                    const SizedBox(height: 30),
+                    _buildCategoryFilters(isMobile),
+                    const SizedBox(height: 40),
                     _filteredProducts.isEmpty
                         ? _buildEmptyState()
-                        : _buildGrid(),
+                        : _buildGrid(isMobile, isTablet),
                   ],
                 ),
               ),
@@ -75,15 +85,19 @@ class _PromoWebState extends State<PromoWeb> {
     );
   }
 
-  // ─────────────────────────────────────────────
-  //  HERO BANNER
-  // ─────────────────────────────────────────────
-  Widget _buildHeroBanner() {
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  HERO BANNER RESPONSIVE
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildHeroBanner(bool isMobile, bool isTablet) {
+    final heroHeight = isMobile ? 220.0 : isTablet ? 260.0 : 280.0;
+    final titleFontSize = isMobile ? 28.0 : isTablet ? 32.0 : 36.0;
+    final subtitleFontSize = isMobile ? 15.0 : 17.0;
+
     return Container(
       width: double.infinity,
-      height: 280,
+      height: heroHeight,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -99,39 +113,21 @@ class _PromoWebState extends State<PromoWeb> {
       ),
       child: Stack(
         children: [
-          // Cercles décoratifs
-          Positioned(
-            right: -40,
-            top: -40,
-            child: Container(
-              width: 240,
-              height: 240,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.04),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 80,
-            bottom: -60,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
-              ),
-            ),
-          ),
+          // Cercles dÃ©coratifs (rÃ©duits sur mobile)
+          if (!isMobile) ...[
+            Positioned(right: -40, top: -40, child: _decorativeCircle(240)),
+            Positioned(right: 80, bottom: -60, child: _decorativeCircle(180)),
+          ],
 
           Row(
             children: [
-              // ── Texte ──
+              // Texte
               Expanded(
-                flex: 2,
+                flex: isMobile ? 1 : 2,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 60),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 24 : 60,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -144,37 +140,43 @@ class _PromoWebState extends State<PromoWeb> {
                           border: Border.all(color: Colors.white.withOpacity(0.2)),
                         ),
                         child: const Text(
-                          '🎉  Offre limitée',
+                          'ðŸŽ‰  Offre limitÃ©e',
                           style: TextStyle(color: Colors.white70, fontSize: 13),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        "PRÉPAREZ L'AÏD",
+                      SizedBox(height: isMobile ? 12 : 16),
+                      Text(
+                        "PRÃ‰PAREZ L'AÃD",
                         style: TextStyle(
-                          fontSize: 36,
+                          fontSize: titleFontSize,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           height: 1.1,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        '-20% sur les vêtements d\'Aïd',
-                        style: TextStyle(fontSize: 17, color: Colors.white70),
+                      SizedBox(height: isMobile ? 8 : 10),
+                      Text(
+                        '-20% sur les vÃªtements d\'AÃ¯d',
+                        style: TextStyle(
+                          fontSize: subtitleFontSize,
+                          color: Colors.white70,
+                        ),
                       ),
-                      const SizedBox(height: 28),
+                      SizedBox(height: isMobile ? 20 : 28),
                       ElevatedButton(
                         onPressed: () => setState(() => _selectedCategory = 'Habits'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: primaryBlue,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 24 : 32,
+                            vertical: isMobile ? 12 : 16,
+                          ),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 0,
                         ),
                         child: const Text(
-                          'Découvrir',
+                          'DÃ©couvrir',
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                         ),
                       ),
@@ -183,28 +185,26 @@ class _PromoWebState extends State<PromoWeb> {
                 ),
               ),
 
-              // ── Image ──
-              Expanded(
-                flex: 3,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                  ),
-                  child: Image.asset(
-                    'assets/images/aid_banner.png',
-                    fit: BoxFit.cover,
-                    height: 280,
-                    // FIX: errorBuilder pour éviter crash si image manquante
-                    errorBuilder: (_, __, ___) => Container(
-                      color: Colors.white.withOpacity(0.05),
-                      child: const Center(
-                        child: Text('🛍️', style: TextStyle(fontSize: 80)),
+              // Image (masquÃ©e ou rÃ©duite sur trÃ¨s petit mobile)
+              if (!isMobile)
+                Expanded(
+                  flex: 3,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(isMobile ? 16 : 24),
+                      bottomRight: Radius.circular(isMobile ? 16 : 24),
+                    ),
+                    child: Image.asset(
+                      'assets/images/aid_banner.png',
+                      fit: BoxFit.cover,
+                      height: heroHeight,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: Colors.white.withOpacity(0.05),
+                        child: const Center(child: Text('ðŸ›ï¸', style: TextStyle(fontSize: 80))),
                       ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ],
@@ -212,32 +212,45 @@ class _PromoWebState extends State<PromoWeb> {
     );
   }
 
-  // ─────────────────────────────────────────────
+  Widget _decorativeCircle(double size) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white.withOpacity(0.05),
+        ),
+      );
+
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   //  SECTION HEADER
-  // ─────────────────────────────────────────────
-  Widget _buildSectionHeader() {
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildSectionHeader(bool isMobile) {
     return Column(
       children: [
-        const Text(
+        Text(
           'Produits en Promotion',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: textDark),
+          style: TextStyle(
+            fontSize: isMobile ? 24 : 30,
+            fontWeight: FontWeight.bold,
+            color: textDark,
+          ),
         ),
         const SizedBox(height: 10),
         Text(
           '${_filteredProducts.length} produit${_filteredProducts.length > 1 ? 's' : ''} disponible${_filteredProducts.length > 1 ? 's' : ''}',
-          style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
+          style: TextStyle(fontSize: isMobile ? 14 : 15, color: Colors.grey.shade500),
         ),
       ],
     );
   }
 
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   //  CATEGORY FILTERS
-  // ─────────────────────────────────────────────
-  Widget _buildCategoryFilters() {
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildCategoryFilters(bool isMobile) {
     return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: isMobile ? 8 : 12,
+      runSpacing: isMobile ? 8 : 12,
       alignment: WrapAlignment.center,
       children: _categories.map((cat) {
         final isSelected = _selectedCategory == cat;
@@ -250,27 +263,47 @@ class _PromoWebState extends State<PromoWeb> {
     );
   }
 
-  // ─────────────────────────────────────────────
-  //  GRID
-  // ─────────────────────────────────────────────
-  Widget _buildGrid() {
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  PRODUCT DETAIL DIALOG
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  void _openProductDetail(Product product) {
+    DetailProductPopup.show(context, product: product);
+  }
+
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  GRID RESPONSIVE
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildGrid(bool isMobile, bool isTablet) {
+    int crossAxisCount = 4; // desktop par dÃ©faut
+    double childAspectRatio = 0.72;
+
+    if (isMobile) {
+      crossAxisCount = 2;
+      childAspectRatio = 0.78;
+    } else if (isTablet) {
+      crossAxisCount = 3;
+      childAspectRatio = 0.75;
+    }
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _filteredProducts.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 24,
-        mainAxisSpacing: 24,
-        childAspectRatio: 0.72,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: isMobile ? 16 : 24,
+        mainAxisSpacing: isMobile ? 16 : 24,
+        childAspectRatio: childAspectRatio,
       ),
-      itemBuilder: (_, i) => _PromoCard(product: _filteredProducts[i]),
+      itemBuilder: (_, i) => FeaturedProductCard(
+        product: _filteredProducts[i],
+        index: i,
+        onTap: () => _openProductDetail(_filteredProducts[i]),
+      ),
     );
   }
 
-  // ─────────────────────────────────────────────
-  //  EMPTY STATE
-  // ─────────────────────────────────────────────
+  // Empty State (inchangÃ© mais avec padding adaptÃ©)
   Widget _buildEmptyState() {
     return SizedBox(
       height: 300,
@@ -296,9 +329,9 @@ class _PromoWebState extends State<PromoWeb> {
   }
 }
 
-// ─────────────────────────────────────────────
-//  FILTER CHIP — hover animé
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  FILTER CHIP â€” hover animÃ©
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _FilterChip extends StatefulWidget {
   final String label;
   final bool isSelected;
@@ -354,203 +387,7 @@ class _FilterChipState extends State<_FilterChip> {
   }
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  PROMO CARD
-// ─────────────────────────────────────────────
-class _PromoCard extends StatefulWidget {
-  final Product product;
-  const _PromoCard({required this.product});
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  @override
-  State<_PromoCard> createState() => _PromoCardState();
-}
-
-class _PromoCardState extends State<_PromoCard> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scale;
-  late Animation<double> _shadow;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 220));
-    _scale = Tween<double>(begin: 1.0, end: 1.04).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-    _shadow = Tween<double>(begin: 8, end: 24).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  // Prix original simulé (+20%)
-  double get _originalPrice => widget.product.price * 1.25;
-
-  void _openDetail() {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (_) => Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 120, vertical: 80),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: DetailProductPopup(product: widget.product),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => _controller.forward(),
-      onExit: (_) => _controller.reverse(),
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (_, __) => Transform.scale(
-          scale: _scale.value,
-          child: GestureDetector(
-            onTap: _openDetail,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.07),
-                    blurRadius: _shadow.value,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Image + Badge ──
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-                            color: lightGrey,
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-                          ),
-                          child: Center(
-                            child: Text(widget.product.image,
-                                style: const TextStyle(fontSize: 56)),
-                          ),
-                        ),
-                        // Badge -20%
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: const BoxDecoration(
-                              color: Colors.redAccent,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(18),
-                                bottomRight: Radius.circular(14),
-                              ),
-                            ),
-                            child: const Text(
-                              '-20%',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Icone favoris
-                        Positioned(
-                          top: 10,
-                          right: 10,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 6),
-                              ],
-                            ),
-                            child: const Icon(Icons.favorite_border, size: 16, color: Colors.grey),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // ── Infos ──
-                  Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.product.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w600, color: textDark),
-                        ),
-                        const SizedBox(height: 8),
-                        // Prix barré + nouveau prix
-                        Row(
-                          children: [
-                            Text(
-                              '\$${_originalPrice.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade400,
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '\$${widget.product.price.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                color: primaryBlue,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _openDetail,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryBlue,
-                              padding: const EdgeInsets.symmetric(vertical: 11),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'Ajouter au panier',
-                              style: TextStyle(color: Colors.white, fontSize: 13),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

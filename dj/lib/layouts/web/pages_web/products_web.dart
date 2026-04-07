@@ -93,21 +93,7 @@ _Meta _metaFor(String cat) =>
 //  POPUP ADAPTATIF
 // ═══════════════════════════════════════════
 void openProductPopup(BuildContext context, Product product) {
-  final w = MediaQuery.sizeOf(context).width;
-  showDialog(
-    context: context,
-    barrierDismissible: true,
-    builder: (_) => Dialog(
-      insetPadding: w >= 1024
-          ? const EdgeInsets.symmetric(horizontal: 120, vertical: 80)
-          : w >= 640
-          ? const EdgeInsets.symmetric(horizontal: 40, vertical: 40)
-          : const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      elevation: 0,
-      child: DetailProductPopup(product: product),
-    ),
-  );
+  DetailProductPopup.show(context, product: product);
 }
 
 // ═══════════════════════════════════════════
