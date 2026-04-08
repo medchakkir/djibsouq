@@ -6,6 +6,8 @@ import 'package:dj/layouts/web/pages_web/cart_web.dart';
 import 'package:dj/layouts/web/pages_web/favorites_web.dart';
 import 'package:dj/layouts/web/pages_web/profile_web.dart';
 import 'package:dj/layouts/web/pages_web/promo_web.dart';
+import 'package:dj/layouts/web/pages_web/contact_us.dart';
+import 'package:dj/layouts/web/pages_web/about_us.dart';
 import 'package:dj/auth_page.dart';
 
 // ─────────────────────────────────────────────
@@ -46,6 +48,9 @@ class AppRoutes {
   static const String profile    = '/profile';
   static const String promo      = '/promo';
   static const String auth       = '/auth';
+  static const String Services_louer = '/Services_louer';
+  static const String Contact_us = '/Contact_us';
+  static const String About_us = '/About_us';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -97,6 +102,28 @@ class AppRoutes {
         return FadeSlideRoute(
           settings: settings,
           page: const AuthPage(),
+        );
+
+      case Services_louer:
+        return FadeSlideRoute(
+          settings: settings,
+          page: Scaffold(
+            body: Center(
+              child: Text("Page 'Services à louer' en construction"),
+            ),
+          ),
+        );
+
+      case Contact_us:
+        return FadeSlideRoute(
+          settings: settings,
+          page: const ContactUsWeb(),
+        );
+
+      case About_us:
+        return FadeSlideRoute(
+          settings: settings,
+          page: const AboutUsWeb(),
         );
 
       default:

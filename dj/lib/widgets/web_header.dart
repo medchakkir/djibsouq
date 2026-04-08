@@ -1,4 +1,7 @@
 import 'package:dj/layouts/web/pages_web/promo_web.dart';
+import 'package:dj/layouts/web/pages_web/services_louer.dart';
+import 'package:dj/layouts/web/pages_web/contact_us.dart';
+import 'package:dj/layouts/web/pages_web/about_us.dart';
 import 'package:flutter/material.dart';
 import 'package:dj/layouts/web/home_web.dart';
 import 'package:dj/layouts/web/pages_web/cart_web.dart';
@@ -252,6 +255,34 @@ class _buildHeaderState extends State<buildHeader> {
                   onTap: () => navigateTo(context, const CartWeb()),
                   deviceType: deviceType,
                 ),
+                _HeaderIcon(
+                  icon: Icons.more_vert, 
+                  activeIcon: Icons.more_vert, 
+                  isActive: false, 
+                  tooltip: 'Plus', 
+                  onTap: () {
+                    // Afficher un menu contextuel avec les options supplémentaires
+                    showMenu(
+                      context: context,
+                      position: const RelativeRect.fromLTRB(1000, 80, 16, 0), // Positionner en haut à droite
+                      items: [
+                        PopupMenuItem(
+                          child: const Text('Services'),
+                          onTap: () => navigateTo(context, const ServicesPage()),
+                        ),
+                        PopupMenuItem(
+                          child: const Text('Contactez-nous'),
+                          onTap: () => navigateTo(context, const ContactUsWeb()),
+                        ),
+                        PopupMenuItem(
+                          child: const Text('À propos de nous'),
+                          onTap: () => navigateTo(context, const AboutUsWeb()),
+                        ),
+                      ],
+                    );
+                  }, 
+                  deviceType: deviceType
+                )
               ],
             ),
           ),

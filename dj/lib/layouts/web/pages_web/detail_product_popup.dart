@@ -443,10 +443,9 @@ class _Pill extends StatelessWidget {
 }
 
 class _StarRow extends StatelessWidget {
-  const _StarRow({required this.rating, required this.reviews, this.size = 14});
+  const _StarRow({required this.rating, required this.reviews});
   final double rating;
   final int reviews;
-  final double size;
 
   @override
   Widget build(BuildContext context) => Row(children: [
@@ -456,13 +455,13 @@ class _StarRow extends StatelessWidget {
           return Icon(
             half ? Icons.star_half_rounded
                 : (full ? Icons.star_rounded : Icons.star_outline_rounded),
-            color: _kAmber, size: size,
+            color: _kAmber, size: 14,
           );
         }),
         const SizedBox(width: 5),
         Text('${rating.toStringAsFixed(1)} · $reviews reviews',
-            style: TextStyle(
-                fontSize: size - 2, color: _kTextMuted)),
+            style: const TextStyle(
+                fontSize: 12, color: _kTextMuted)),
       ]);
 }
 
@@ -516,10 +515,9 @@ class _ActionBtn extends StatefulWidget {
     required this.label,
     required this.primary,
     required this.onTap,
-    this.fullWidth = false,
   });
   final String label;
-  final bool primary, fullWidth;
+  final bool primary;
   final VoidCallback onTap;
 
   @override
@@ -539,7 +537,7 @@ class _ActionBtnState extends State<_ActionBtn> {
         scale: _p ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 100),
         child: SizedBox(
-          width: widget.fullWidth ? double.infinity : null,
+          width: null,
           height: 44,
           child: DecoratedBox(
             decoration: BoxDecoration(
@@ -561,8 +559,7 @@ class _ActionBtnState extends State<_ActionBtn> {
 }
 
 class _InfoStrip extends StatelessWidget {
-  const _InfoStrip({this.vertical = false});
-  final bool vertical;
+  const _InfoStrip();
 
   static const _items = [
     (Icons.local_shipping_outlined, 'Free delivery'),
@@ -590,20 +587,10 @@ class _InfoStrip extends StatelessWidget {
         border: Border.all(color: _kBorder),
         color: _kSurface,
       ),
-      child: vertical
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: children
-                  .map((c) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: c,
-                      ))
-                  .toList(),
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: children,
-            ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: children,
+      ),
     );
   }
 }
