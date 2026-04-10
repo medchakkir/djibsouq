@@ -1,25 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:dj/models/product_models.dart';
+
+const Color primaryBlue = Color(0xFF1E3A8A);
+const Color cardGrey = Color(0xFFF3F4F6);
 
 class ProductCard extends StatelessWidget {
-  final String productName;
-  final String price;
-  final String imageUrl;
-  final double rating;
-  final int reviewCount;
+  final Product product;
   final VoidCallback? onTap;
-  final VoidCallback? onFavoriteTap;
-  final bool isFavorite;
 
   const ProductCard({
-    super.key,
-    required this.productName,
-    required this.price,
-    required this.imageUrl,
-    this.rating = 4.5,
-    this.reviewCount = 0,
+    required this.product,
     this.onTap,
-    this.onFavoriteTap,
-    this.isFavorite = false,
+    super.key,
   });
 
   @override
@@ -27,105 +19,150 @@ class ProductCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        width: 170,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            )
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image section
+
+            /// IMAGE + FAVORITE
             Stack(
               children: [
                 Container(
-                  height: 150,
-                  decoration: BoxDecoration(
+                  height: 140,
+                  decoration: const BoxDecoration(
+                    color: cardGrey,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(18),
+                    ),
+                  ),
+                  child: ClipRRect(
                     borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12),
+                      top: Radius.circular(18),
                     ),
-                    color: const Color(0xFFF3F4F6),
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrl),
-                      fit: BoxFit.cover,
+                    child: Image.network(
+                      product.image,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(Icons.image, size: 40),
+                        );
+                      },
                     ),
                   ),
                 ),
+
+                /// FAVORITE ICON
                 Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: onFavoriteTap,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : Colors.grey,
-                        size: 18,
-                      ),
+                  right: 10,
+                  top: 10,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                        )
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.favorite_border,
+                      size: 18,
                     ),
                   ),
-                ),
+                )
               ],
             ),
-            // Details section
+
+            /// CONTENT
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
+                  /// TITLE
                   Text(
-                    productName,
-                    maxLines: 2,
+                    product.title,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      fontSize: 13,
                     ),
                   ),
+
+                  const SizedBox(height: 4),
+
+                  /// SHORT COMMENT
+                  const Text(
+                    "Great quality product...",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey,
+                    ),
+                  ),
+
                   const SizedBox(height: 8),
+
+                  /// PRICE + ADD TO CART
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(Icons.star, size: 14, color: Colors.amber),
-                      const SizedBox(width: 4),
+
+                      /// PRICE
                       Text(
-                        '$rating ($reviewCount)',
+                        '\$${product.price.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey,
+                          color: primaryBlue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+
+                      /// ADD TO CART TEXT BUTTON
+                      TextButton(
+                        onPressed: () {},
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          backgroundColor: primaryBlue.withOpacity(0.1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: const Text(
+                          "Add to Cart",
+                          style: TextStyle(
+                            color: primaryBlue,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '\$$price',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E3A8A),
-                    ),
-                  ),
                 ],
               ),
-            ),
+            )
           ],
         ),
       ),
